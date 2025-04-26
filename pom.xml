@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Project identification -->
+    <groupId>de.daniel</groupId>
+    <artifactId>bankprojekt</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <!-- Compiler Version -->
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
+
+    <!-- Dependencies -->
+    <dependencies>
+        <dependency>
+            <groupId>org.decimal4j</groupId>
+            <artifactId>decimal4j</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+    </dependencies>
+
+    <!-- Repositories (for Maven Central) -->
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <!-- Build Section -->
+    <build>
+        <plugins>
+            <!-- Jacoco Plugin for Code Coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <!-- Prepare Jacoco agent during validate phase -->
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal> <!-- Agent vorbereiten -->
+                        </goals>
+                        <phase>validate</phase> <!-- Während der validate Phase -->
+                    </execution>
+
+                    <!-- Generate Jacoco report during test phase -->
+                    <execution>
+                        <goals>
+                            <goal>report</goal> <!-- Bericht erstellen -->
+                        </goals>
+                        <phase>test</phase> <!-- Während der test Phase -->
+                        <configuration>
+                            <!-- Specify which classes to include in the report -->
+                            <includes>
+                                <include>**/bankprojekt/verarbeitung/Girokonto.class</include> <!-- Die spezifische Klasse angeben -->
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
