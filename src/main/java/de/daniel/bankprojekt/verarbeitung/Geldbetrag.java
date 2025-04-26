@@ -31,7 +31,7 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 		if(!Double.isFinite(betrag))
 			throw new IllegalArgumentException();
 		this.betrag = betrag;
-		// this(betrag, Waehrung.EUR);
+		this.waehrung = Waehrung.EUR;
 	}
 
 	/**
@@ -42,91 +42,26 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	public Geldbetrag (double betrag, Waehrung w){
 		if(!Double.isFinite(betrag))
 			throw new IllegalArgumentException();
+		if (w == null)
+			throw new NullPointerException();
 		this.betrag = betrag;
 		this.waehrung = w;
 	}
 
 	/**
-	 * rechnet die Währungs des Geldbetrages in einen anderen um
+	 * Rechnet die Währung des Geldbetrages in eine andere um.
 	 * @param zielwaehrung Währung in die umgerechnet werden soll
-	 * @return neues Geldbetrag Objekt mit umgerechnter Währung
+	 * @return neues Geldbetrag-Objekt mit umgerechneter Währung
 	 */
 	public Geldbetrag umrechnen(Waehrung zielwaehrung){
 
 		if (zielwaehrung == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Zielwährung darf nicht null sein");
 
-		double newBetrag = 0;
+		double faktor = this.waehrung.getNewWährung(zielwaehrung); 	// Umrechnungsfaktor von der aktuellen Währung zu der Zielwährung
+		double neuerBetrag = this.betrag * faktor;					 // Berechnung des neuen Betrags in der Zielwährung
 
-			// Wenn die Ausgangswährung EUR ist, werden die Umrechnungslogiken für alle Zielwährungen implementiert
-			if (this.waehrung == Waehrung.EUR) {
-				switch (zielwaehrung) {
-					case ESCUDO:
-						newBetrag = this.betrag * 109.8269;
-						break;
-					case DOBRA:
-						newBetrag = this.betrag * 24304.7429;
-						break;
-					case FRANC:
-						newBetrag = this.betrag * 490.92;
-						break;
-					default:
-						throw new IllegalArgumentException("Unbekannte Zielwährung");
-				}
-			}
-			// Wenn die Ausgangswährung ESCUDO ist
-			else if (this.waehrung == Waehrung.ESCUDO) {
-				switch (zielwaehrung) {
-					case EUR:
-						newBetrag = this.betrag / 109.8269;
-						break;
-					case DOBRA:
-						newBetrag = (this.betrag / 109.8269) * 24304.7429;
-						break;
-					case FRANC:
-						newBetrag = (this.betrag / 109.8269) * 490.92;
-						break;
-					default:
-						throw new IllegalArgumentException("Unbekannte Zielwährung");
-				}
-			}
-			// Wenn die Ausgangswährung DOBRA ist
-			else if (this.waehrung == Waehrung.DOBRA) {
-				switch (zielwaehrung){
-					case EUR:
-					newBetrag = this.betrag / 24304.7429;
-					break;
-					case FRANC:
-						newBetrag = (this.betrag / 24304.7429) * 490.92;
-						break;
-					case ESCUDO:
-						newBetrag = (this.betrag / 24304.7429) * 109.8269;
-						break;
-					default:
-						throw new IllegalArgumentException("Unbekannte Zielwährung");
-				}
-			}
-			// Wenn die Ausgangswährung FRANC ist
-			else if (this.waehrung == Waehrung.FRANC) {
-				switch (zielwaehrung){
-					case EUR:
-						newBetrag = this.betrag / 490.92;
-						break;
-					case ESCUDO:
-						newBetrag = (this.betrag / 490.92) * 109.8269;
-						break;
-					case DOBRA:
-						newBetrag = (this.betrag / 490.92) * 24304.7429;
-						break;
-					default:
-						throw new IllegalArgumentException("Unbekannte Zielwährung");
-				}
-
-			}
-
-
-		// Setze den neuen Betrag und die Zielwährung
-			return new Geldbetrag(newBetrag, zielwaehrung);
+		return new Geldbetrag(neuerBetrag, zielwaehrung);
 	}
 
 	/**
@@ -144,18 +79,22 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	public Waehrung getWaehrung(){
 		return this.waehrung;
 	}
-	
-	/**
-	 * rechnet this + summand
-	 * @param summand zu addierender Betrag
-	 * @return this + summand in der Währung von this
-	 * @throws IllegalArgumentException wenn summand null ist
-	 */
+
 	public Geldbetrag plus(Geldbetrag summand)
 	{
 		if(summand == null)
 			throw new IllegalArgumentException();
-		return new Geldbetrag(this.betrag + summand.betrag);
+
+		// wenn this und Parameter dieselbe Währung haben
+		if (summand.waehrung == this.waehrung) {
+			return new Geldbetrag(this.betrag + summand.betrag, this.waehrung);
+		}
+
+		// Umrechnung in die Währung von this, falls sie nicht mit den Parameter übereinstimmt
+		double andererBetragUmgerechnet = summand.umrechnen(this.waehrung).betrag;
+		double ergebnis = this.betrag + andererBetragUmgerechnet;
+
+		return new Geldbetrag(ergebnis,this.waehrung);
 	}
 	
 	/**
