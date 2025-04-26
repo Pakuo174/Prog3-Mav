@@ -1,4 +1,4 @@
-package de.daniel.bank.bankprojekt.verarbeitung;
+package de.daniel.bankprojekt.verarbeitung;
 
 /**
  * tritt bei einem schädigenden Zugriff auf ein gesperrtes Konto auf

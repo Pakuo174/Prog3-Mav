@@ -1,6 +1,6 @@
-package de.daniel.bank.bankprojekt.verarbeitung;
+package de.daniel.bankprojekt.verarbeitung;
 
-import bankprojekt.geld.Waehrung;
+import de.daniel.bankprojekt.geld.Waehrung;
 
 /**
  * Ein Geldbetrag mit Währung

@@ -1,4 +1,4 @@
-package de.daniel.bank.bankprojekt.bankprojekt.geld;
+package de.daniel.bankprojekt.geld;
 
 import org.decimal4j.util.DoubleRounder;
 

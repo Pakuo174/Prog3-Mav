@@ -1,4 +1,4 @@
-package de.daniel.bank.bankprojekt.verarbeitung;
+package de.daniel.bankprojekt.verarbeitung;
 
 /**
  * ein Bank-Konto, das Absender und Ziel von Überweisungen

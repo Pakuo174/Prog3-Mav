@@ -1,4 +1,4 @@
-package de.daniel.bank.bankprojekt.verarbeitung;
+package de.daniel.bankprojekt.verarbeitung;
 
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
