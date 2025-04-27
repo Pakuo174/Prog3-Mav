@@ -68,13 +68,16 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
             throw new GesperrtException(this.getKontonummer());
         if (betrag == null || betrag.isNegativ()|| empfaenger == null || verwendungszweck == null)
             throw new IllegalArgumentException("Parameter fehlerhaft");
-        if (!getKontostand().plus(dispo).minus(betrag).isNegativ())
-        {
-            setKontostand(getKontostand().minus(betrag));
-            return true;
-        }
-        else
-        	return false;
+
+		//_____________________________________________________________
+		Geldbetrag dispoInKontowaehrung = this.dispo.umrechnen(this.getKontostand().getWaehrung());
+		if (!getKontostand().plus(dispoInKontowaehrung).minus(betrag).isNegativ())
+		{
+			setKontostand(getKontostand().minus(betrag));
+			return true;
+		}
+		else
+			return false;
     }
 
     @Override
@@ -94,19 +97,37 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
     	return ausgabe;
     }
 
+
+	/**
+	 * Der dispo wird vorher auf die Kontowährung umgerechnet >>> in der Variable "dispoInKontoWährung"
+	 * @param betrag abzuhebender Betrag
+	 * @return
+	 * @throws GesperrtException
+	 */
 	@Override
-	public boolean abheben(Geldbetrag betrag) throws GesperrtException{
+	public boolean abheben(Geldbetrag betrag) throws GesperrtException {
 		if (betrag == null || betrag.isNegativ()) {
 			throw new IllegalArgumentException("Betrag ungültig");
 		}
-		if(this.isGesperrt())
+		if (this.isGesperrt()) {
 			throw new GesperrtException(this.getKontonummer());
-		if (!getKontostand().plus(dispo).minus(betrag).isNegativ())
-		{
-			setKontostand(getKontostand().minus(betrag));
-			return true;
 		}
-		else
+
+
+		// hier wird der Dispo so umgerechnet, dass er dieselbe Währung hat wie dein Kontostand + der Variable zugewiesen
+		Geldbetrag dispoInKontowaehrung = this.dispo.umrechnen(this.getKontostand().getWaehrung());
+
+		//  addieren des aktuellen Kontostand plus den Dispo (beide in der gleichen Währung)
+		// saldo für dumme ~ tatsächlicher "verfügbarer Betrag", den du abheben oder überweisen darfst — inklusive Dispo (0 EUro auf Konto und 100 Euro Dispo = man darf 100 noch abheben)
+		Geldbetrag saldo = this.getKontostand().plus(dispoInKontowaehrung);
+
+		// Überprüfe, ob nach Abzug des Betrags noch über saldo ist - also im Rahmen vom Dispo
+		// wenn ungleich negativ kann es abgezogen werden (300 saldo - 280 betrag ✔️ ️, 300 saldo - 350 betrag ❌)
+		if (!saldo.minus(betrag).isNegativ()) {
+			setKontostand(this.getKontostand().minus(betrag));
+			return true;
+		} else {
 			return false;
+		}
 	}
 }

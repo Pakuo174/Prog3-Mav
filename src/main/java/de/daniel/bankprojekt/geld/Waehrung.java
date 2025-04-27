@@ -44,11 +44,12 @@ public enum Waehrung {
     /**
      *
      * @param zielw soll die Währung sein, in die umgerechet wird
+     ** DoubleRounder rundet die Währung auf 2 Nachkommastellen
      * @return gewünschte Währung, indem zielw durch momentane Währung geteilt wird
      */
     public double getNewWährung(Waehrung zielw){
         if (zielw == null)
-            throw new IllegalArgumentException("Zielwährung darf nicht null sein");
+            throw new NullPointerException("Zielwährung darf nicht null sein");
         return DoubleRounder.round((zielw.umrKursEuro / this.umrKursEuro),2);
     }
 

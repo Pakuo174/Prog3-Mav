@@ -49,7 +49,7 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	}
 
 	/**
-	 * Rechnet die Währung des Geldbetrages in eine andere um.
+	 * Rechnet die Währung des aufrufenden Objektes in Parameter "zielwährung" um
 	 * @param zielwaehrung Währung in die umgerechnet werden soll
 	 * @return neues Geldbetrag-Objekt mit umgerechneter Währung
 	 */
@@ -80,6 +80,13 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 		return this.waehrung;
 	}
 
+
+	/**
+	 * rechnet this + summand in der Währung von this
+	 * @param summand zu addierender Betrag
+	 * @return neues Objekt in der Währung von this
+	 * @throws IllegalArgumentException wenn summand null ist
+	 */
 	public Geldbetrag plus(Geldbetrag summand)
 	{
 		if(summand == null)
@@ -98,7 +105,7 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	}
 	
 	/**
-	 * rechnet this - siúbtrahend
+	 * rechnet this - subtrahend
 	 * @param subtrahend abzuziehender Betrag
 	 * @return this - subtrahend in der Währung von this
 	 * @throws IllegalArgumentException wenn subtrahend null ist
@@ -107,7 +114,17 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	{
 		if(subtrahend == null)
 			throw new IllegalArgumentException();
-		return new Geldbetrag(this.betrag - subtrahend.betrag);
+
+		// wenn this und Parameter dieselbe Währung haben
+		if (subtrahend.waehrung == this.waehrung) {
+			return new Geldbetrag(this.betrag - subtrahend.betrag, this.waehrung);
+		}
+
+		// Umrechnung in die Währung von this, falls sie nicht mit den Parameter übereinstimmt
+		double andererBetragUmgerechnet = subtrahend.umrechnen(this.waehrung).betrag;
+		double ergebnis = this.betrag - andererBetragUmgerechnet;
+
+		return new Geldbetrag(ergebnis - subtrahend.betrag);
 	}
 
 	/**
@@ -120,7 +137,9 @@ public class Geldbetrag implements Comparable<Geldbetrag>{
 	{
 		if(!Double.isFinite(faktor))
 			throw new IllegalArgumentException();
-		return new Geldbetrag(this.betrag * faktor);
+
+
+		return new Geldbetrag(this.betrag * faktor,this.waehrung);
 	}
 
 	@Override
