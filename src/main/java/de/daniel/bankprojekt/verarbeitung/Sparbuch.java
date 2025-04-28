@@ -1,7 +1,6 @@
 package de.daniel.bankprojekt.verarbeitung;
 
 import java.time.LocalDate;
-import de.daniel.bankprojekt.verarbeitung.Kalender;
 
 /**
  * ein Sparbuch, d.h. ein Konto, das nur recht eingeschränkt genutzt

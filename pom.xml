@@ -5,73 +5,110 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Project identification -->
     <groupId>de.daniel</groupId>
     <artifactId>bankprojekt</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <!-- Compiler Version -->
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- Dependencies -->
     <dependencies>
         <dependency>
             <groupId>org.decimal4j</groupId>
             <artifactId>decimal4j</artifactId>
             <version>1.0.3</version>
         </dependency>
+
+        <!-- Nur JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.8.1</version>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
-    <!-- Repositories (for Maven Central) -->
-    <repositories>
-        <repository>
-            <id>central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
-
-    <!-- Build Section -->
     <build>
         <plugins>
-            <!-- Jacoco Plugin for Code Coverage -->
+            <!-- Jacoco für Testabdeckung -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
                 <executions>
-                    <!-- Prepare Jacoco agent during validate phase -->
                     <execution>
+                        <!-- JaCoCo agent während der Testphase starten -->
+                        <id>prepare-agent</id>
                         <goals>
-                            <goal>prepare-agent</goal> <!-- Agent vorbereiten -->
+                            <goal>prepare-agent</goal>
                         </goals>
-                        <phase>validate</phase> <!-- Während der validate Phase -->
                     </execution>
-
-                    <!-- Generate Jacoco report during test phase -->
                     <execution>
+                        <!-- JaCoCo-Bericht nach den Tests erzeugen -->
+                        <id>report</id>
+                        <phase>test</phase> <!-- Berichtserstellung im verify-Phase -->
                         <goals>
-                            <goal>report</goal> <!-- Bericht erstellen -->
+                            <goal>report</goal> <!-- Generiere den Bericht -->
                         </goals>
-                        <phase>test</phase> <!-- Während der test Phase -->
                         <configuration>
-                            <!-- Specify which classes to include in the report -->
                             <includes>
-                                <include>**/bankprojekt/verarbeitung/Girokonto.class</include> <!-- Die spezifische Klasse angeben -->
+                                <include>**/bankprojekt/verarbeitung/Girokonto.class</include> <!-- Pfad zur Girokonto.class -->
                             </includes>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Surefire Plugin zum Ausführen der Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/archive.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-archive</id>
+                        <phase>package</phase> <!-- Archiv wird beim Package-Bauen erzeugt -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <configuration>
+                    <show>protected</show>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 
 </project>

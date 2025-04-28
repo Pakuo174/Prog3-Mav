@@ -1,29 +1,29 @@
 package de.daniel.bankprojekt.verarbeitung.test.Geldbetrag;
-
 import de.daniel.bankprojekt.geld.Waehrung;
 import de.daniel.bankprojekt.verarbeitung.*;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
 
 public class Tests {
 
     @Test
-    void GeldbetragTest(){
+    public void GeldbetragTest(){
         Geldbetrag g1 = new Geldbetrag(-2.0);
         System.out.println(g1);
     }
     @Test
-    void GeldbetragTest2(){
+    public void GeldbetragTest2(){
         Geldbetrag g1 = new Geldbetrag(1.0,Waehrung.EUR);
         Geldbetrag newG = g1.umrechnen(Waehrung.ESCUDO);
         System.out.println(newG);
     }
 
     @Test
-    void minusTest(){
+    public void minusTest(){
         Geldbetrag g1 = new Geldbetrag(5.0);
         Geldbetrag g2 = new Geldbetrag(2.0);
 
@@ -32,7 +32,7 @@ public class Tests {
 
     }
     @Test
-    void malTest(){
+    public void malTest(){
         Geldbetrag g1 = new Geldbetrag(5.0);
 
         Geldbetrag newG = g1.mal(2.0);
@@ -42,7 +42,15 @@ public class Tests {
     //___________________Tests für Konto________________________________
 
     @Test
-    void kontoErstellung_GeldEinzahlen(){
+    public void EscudoInEuro(){
+        Geldbetrag g1 = new Geldbetrag(109,Waehrung.ESCUDO);
+        Geldbetrag newg1 = g1.umrechnen(Waehrung.EUR);
+        System.out.println(newg1);
+
+    }
+
+    @Test
+    public void kontoErstellung_GeldEinzahlen(){
 
         // Konto wird erstellt ohne Geld aber mit 100 Euro dispo
         Girokonto k1 = new Girokonto(new Kunde("Daniel","Kujawa","Bärlin", LocalDate.ofEpochDay(2000-07-12)),10552,new Geldbetrag(100,Waehrung.EUR));
@@ -57,7 +65,7 @@ public class Tests {
     }
 
     @Test
-    void kontoErstellung_GeldAbhebenÜberDispoEURO(){
+    public void kontoErstellung_GeldAbhebenInsMinusEURO() throws NichtGenugGuthabenException {
         // Konto wird erstellt ohne Geld aber mit 100 Euro dispo
         Girokonto k1 = new Girokonto(new Kunde("Daniel","Kujawa","Bärlin", LocalDate.ofEpochDay(2000-07-12)),10552,new Geldbetrag(100,Waehrung.EUR));
         k1.einzahlen(new Geldbetrag(52,Waehrung.EUR));
@@ -74,9 +82,9 @@ public class Tests {
         System.out.println(k1);
     }
 
-    //KLAPPPT NICHT !
+
     @Test
-    void kontoErstellung_GeldAbhebenÜberDispoEscudo(){
+    public void kontoErstellung_GeldAbhebenEscudo(){
         // Konto wird erstellt ohne Geld aber mit 100 Euro dispo
         Girokonto k1 = new Girokonto(new Kunde("Daniel","Kujawa","Bärlin", LocalDate.ofEpochDay(2000-07-12)),10552,new Geldbetrag(100,Waehrung.EUR));
         k1.einzahlen(new Geldbetrag(52,Waehrung.EUR));
@@ -84,16 +92,44 @@ public class Tests {
 
         try {
             k1.abheben(new Geldbetrag (109.8269,Waehrung.ESCUDO));
-        } catch (GesperrtException e) {
+        } catch (GesperrtException | NichtGenugGuthabenException e) {
             throw new RuntimeException(e);
         }
 
 
         System.out.println("____________- 109.8269 Escudo________________");
         System.out.println(k1);
+    }
 
+
+
+    @Test
+    public void EscudoInEuro2(){
+        Geldbetrag g1 = new Geldbetrag(16350,Waehrung.ESCUDO);
+        Geldbetrag newg1 = g1.umrechnen(Waehrung.EUR);
+        System.out.println(newg1);
 
     }
+
+    @Test
+    public void kontoErstellung_GeldAbhebenÜberDispoEscudo(){
+        // Konto wird erstellt ohne Geld aber mit 100 Euro dispo
+        Girokonto k1 = new Girokonto(new Kunde("Daniel","Kujawa","Bärlin", LocalDate.ofEpochDay(2000-07-12)),10552,new Geldbetrag(100,Waehrung.EUR));
+        k1.einzahlen(new Geldbetrag(50,Waehrung.EUR));
+        System.out.println(k1);
+
+        try {
+            k1.abheben(new Geldbetrag (16350,Waehrung.ESCUDO));
+        } catch (GesperrtException | NichtGenugGuthabenException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        System.out.println("____________- 109.8269 Escudo________________");
+        System.out.println(k1);
+    }
+
+
 
 
 }

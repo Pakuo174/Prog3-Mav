@@ -1,6 +1,7 @@
 package de.daniel.bankprojekt.verarbeitung;
 
 import de.daniel.bankprojekt.geld.Waehrung;
+import de.daniel.bankprojekt.verarbeitung.test.Geldbetrag.NichtGenugGuthabenException;
 
 /**
  * stellt ein allgemeines Bank-Konto dar
@@ -141,13 +142,12 @@ public abstract class Konto implements Comparable<Konto>
      * und die speziellen Abheberegeln des jeweiligen Kontotyps die Abhebung erlauben
      *
      * @param betrag abzuhebender Betrag
-     * @throws GesperrtException wenn das Konto gesperrt ist
+     * @return
+     * @throws GesperrtException        wenn das Konto gesperrt ist
      * @throws IllegalArgumentException wenn der betrag negativ oder unendlich oder NaN ist
-     * @return true, wenn die Abhebung geklappt hat,
-     * 		   false, wenn sie abgelehnt wurde
      */
     public abstract boolean abheben(Geldbetrag betrag)
-            throws GesperrtException;
+            throws GesperrtException, NichtGenugGuthabenException;
 
     /**
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.

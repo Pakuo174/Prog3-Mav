@@ -1,5 +1,7 @@
 package de.daniel.bankprojekt.verarbeitung;
 
+import de.daniel.bankprojekt.verarbeitung.test.Geldbetrag.NichtGenugGuthabenException;
+
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
  * Überweisungen zu senden und zu empfangen.
@@ -100,12 +102,13 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 
 	/**
 	 * Der dispo wird vorher auf die Kontowährung umgerechnet >>> in der Variable "dispoInKontoWährung"
+	 *
 	 * @param betrag abzuhebender Betrag
 	 * @return
-	 * @throws GesperrtException
+	 * @throws NichtGenugGuthabenException wenn das Guthaben und der Disp nicht ausreicht
 	 */
 	@Override
-	public boolean abheben(Geldbetrag betrag) throws GesperrtException {
+	public boolean abheben(Geldbetrag betrag) throws GesperrtException, NichtGenugGuthabenException {
 		if (betrag == null || betrag.isNegativ()) {
 			throw new IllegalArgumentException("Betrag ungültig");
 		}
@@ -113,21 +116,15 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 			throw new GesperrtException(this.getKontonummer());
 		}
 
-
-		// hier wird der Dispo so umgerechnet, dass er dieselbe Währung hat wie dein Kontostand + der Variable zugewiesen
 		Geldbetrag dispoInKontowaehrung = this.dispo.umrechnen(this.getKontostand().getWaehrung());
-
-		//  addieren des aktuellen Kontostand plus den Dispo (beide in der gleichen Währung)
-		// saldo für dumme ~ tatsächlicher "verfügbarer Betrag", den du abheben oder überweisen darfst — inklusive Dispo (0 EUro auf Konto und 100 Euro Dispo = man darf 100 noch abheben)
 		Geldbetrag saldo = this.getKontostand().plus(dispoInKontowaehrung);
+		Geldbetrag betragInKontowaehrung = betrag.umrechnen(this.getKontostand().getWaehrung());
 
-		// Überprüfe, ob nach Abzug des Betrags noch über saldo ist - also im Rahmen vom Dispo
-		// wenn ungleich negativ kann es abgezogen werden (300 saldo - 280 betrag ✔️ ️, 300 saldo - 350 betrag ❌)
-		if (!saldo.minus(betrag).isNegativ()) {
-			setKontostand(this.getKontostand().minus(betrag));
-			return true;
-		} else {
-			return false;
+		if (saldo.minus(betragInKontowaehrung).isNegativ()) {
+			throw new NichtGenugGuthabenException("Nicht genug Guthaben und Dispo für Abhebung!");
 		}
+
+		setKontostand(this.getKontostand().minus(betragInKontowaehrung));
+		return false;
 	}
 }
