@@ -1,7 +1,6 @@
 package de.daniel.bankprojekt.verarbeitung;
 
 import de.daniel.bankprojekt.geld.Waehrung;
-import de.daniel.bankprojekt.verarbeitung.test.Geldbetrag.NichtGenugGuthabenException;
 
 /**
  * stellt ein allgemeines Bank-Konto dar
@@ -147,7 +146,7 @@ public abstract class Konto implements Comparable<Konto>
      * @throws IllegalArgumentException wenn der betrag negativ oder unendlich oder NaN ist
      */
     public abstract boolean abheben(Geldbetrag betrag)
-            throws GesperrtException, NichtGenugGuthabenException;
+            throws GesperrtException;
 
     /**
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.

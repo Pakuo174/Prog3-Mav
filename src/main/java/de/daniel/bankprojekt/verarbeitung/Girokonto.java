@@ -1,7 +1,5 @@
 package de.daniel.bankprojekt.verarbeitung;
 
-import de.daniel.bankprojekt.verarbeitung.test.Geldbetrag.NichtGenugGuthabenException;
-
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
  * Überweisungen zu senden und zu empfangen.
@@ -108,7 +106,7 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 	 * @throws NichtGenugGuthabenException wenn das Guthaben und der Disp nicht ausreicht
 	 */
 	@Override
-	public boolean abheben(Geldbetrag betrag) throws GesperrtException, NichtGenugGuthabenException {
+	public boolean abheben(Geldbetrag betrag) throws GesperrtException {
 		if (betrag == null || betrag.isNegativ()) {
 			throw new IllegalArgumentException("Betrag ungültig");
 		}
@@ -121,10 +119,10 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 		Geldbetrag betragInKontowaehrung = betrag.umrechnen(this.getKontostand().getWaehrung());
 
 		if (saldo.minus(betragInKontowaehrung).isNegativ()) {
-			throw new NichtGenugGuthabenException("Nicht genug Guthaben und Dispo für Abhebung!");
+			return  false;
 		}
 
 		setKontostand(this.getKontostand().minus(betragInKontowaehrung));
-		return false;
+		return true;
 	}
 }

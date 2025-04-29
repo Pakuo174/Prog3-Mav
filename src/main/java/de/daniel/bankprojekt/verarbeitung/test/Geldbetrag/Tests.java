@@ -28,6 +28,7 @@ public class Tests {
         Geldbetrag g2 = new Geldbetrag(2.0);
 
         double newG = g1.minus(g2).getBetrag();
+        System.out.println(newG);
         assertEquals(newG,3.0);
 
     }
@@ -65,7 +66,7 @@ public class Tests {
     }
 
     @Test
-    public void kontoErstellung_GeldAbhebenInsMinusEURO() throws NichtGenugGuthabenException {
+    public void kontoErstellung_GeldAbhebenInsMinusEURO()  {
         // Konto wird erstellt ohne Geld aber mit 100 Euro dispo
         Girokonto k1 = new Girokonto(new Kunde("Daniel","Kujawa","Bärlin", LocalDate.ofEpochDay(2000-07-12)),10552,new Geldbetrag(100,Waehrung.EUR));
         k1.einzahlen(new Geldbetrag(52,Waehrung.EUR));
@@ -92,7 +93,7 @@ public class Tests {
 
         try {
             k1.abheben(new Geldbetrag (109.8269,Waehrung.ESCUDO));
-        } catch (GesperrtException | NichtGenugGuthabenException e) {
+        } catch (GesperrtException e) {
             throw new RuntimeException(e);
         }
 
@@ -120,7 +121,7 @@ public class Tests {
 
         try {
             k1.abheben(new Geldbetrag (16350,Waehrung.ESCUDO));
-        } catch (GesperrtException | NichtGenugGuthabenException e) {
+        } catch (GesperrtException e) {
             throw new RuntimeException(e);
         }
 
