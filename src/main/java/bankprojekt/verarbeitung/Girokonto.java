@@ -1,4 +1,4 @@
-package de.daniel.bankprojekt.verarbeitung;
+package bankprojekt.verarbeitung;
 
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
@@ -103,7 +103,6 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 	 *
 	 * @param betrag abzuhebender Betrag
 	 * @return
-	 * @throws NichtGenugGuthabenException wenn das Guthaben und der Disp nicht ausreicht
 	 */
 	@Override
 	public boolean abheben(Geldbetrag betrag) throws GesperrtException {

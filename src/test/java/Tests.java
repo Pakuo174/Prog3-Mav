@@ -1,12 +1,16 @@
-package de.daniel.bankprojekt.verarbeitung.test.Geldbetrag;
-import de.daniel.bankprojekt.geld.Waehrung;
-import de.daniel.bankprojekt.verarbeitung.*;
-import org.junit.Test;
+import bankprojekt.geld.Waehrung;
+import bankprojekt.verarbeitung.Geldbetrag;
+import bankprojekt.verarbeitung.GesperrtException;
+import bankprojekt.verarbeitung.Girokonto;
+import bankprojekt.verarbeitung.Kunde;
+
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 import java.time.LocalDate;
 
-import static org.junit.Assert.assertEquals;
 
 public class Tests {
 
@@ -30,7 +34,6 @@ public class Tests {
         double newG = g1.minus(g2).getBetrag();
         System.out.println(newG);
         assertEquals(newG,3.0);
-
     }
     @Test
     public void malTest(){

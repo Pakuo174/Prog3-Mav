@@ -1,6 +1,6 @@
-package de.daniel.bankprojekt.verarbeitung;
+package bankprojekt.verarbeitung;
 
-import de.daniel.bankprojekt.geld.Waehrung;
+import bankprojekt.geld.Waehrung;
 
 /**
  * stellt ein allgemeines Bank-Konto dar

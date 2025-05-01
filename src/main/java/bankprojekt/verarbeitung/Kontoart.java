@@ -1,4 +1,4 @@
-package de.daniel.bankprojekt.verarbeitung;
+package bankprojekt.verarbeitung;
 
 /**
  * alle zur Verfügung stehenden Kontoarten
