@@ -7,6 +7,8 @@ import bankprojekt.geld.Waehrung;
  */
 public abstract class Konto implements Comparable<Konto>
 {
+    protected long bankleitzahl;
+
     public void ausgeben() {
         System.out.println(this.toString());
     }

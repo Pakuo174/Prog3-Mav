@@ -1,5 +1,7 @@
 package bankprojekt.verarbeitung;
 
+import bankprojekt.verwaltung.Bank;
+
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
  * Überweisungen zu senden und zu empfangen.
@@ -13,6 +15,7 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 	 * Wert, bis zu dem das Konto überzogen werden darf
 	 */
 	private Geldbetrag dispo;
+
 
 	/**
 	 * erzeugt ein leeres, nicht gesperrtes Standard-Girokonto
@@ -36,6 +39,18 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 		super(inhaber, nummer);
 		if(dispo == null || dispo.isNegativ())
 			throw new IllegalArgumentException("Der Dispo ist nicht gültig!");
+		this.dispo = dispo;
+	}
+
+	/**
+	 * erstellt eine Instanz für ein Überweisungskonto zusammen mit einer zugehörigen Bank - bankleitzahl
+	 * @param inhaber der Inhaber
+	 * @param kontonummer die gewünschte Kontonummer
+	 * @param bankleitzahl ist die bankleitzahl der zugehörigen Bank
+	 * @throws IllegalArgumentException wenn der inhaber null ist
+	 */
+	public Girokonto(Kunde inhaber, long kontonummer, long bankleitzahl, Geldbetrag dispo) {
+		super(inhaber, kontonummer, bankleitzahl); // wenn der Superkonstruktor das akzeptiert
 		this.dispo = dispo;
 	}
 	

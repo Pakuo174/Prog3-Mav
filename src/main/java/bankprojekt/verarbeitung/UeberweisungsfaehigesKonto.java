@@ -5,7 +5,9 @@ package bankprojekt.verarbeitung;
  * sein kann.
  */
 public abstract class UeberweisungsfaehigesKonto extends Konto {
-	
+
+
+	private long bankleitzahl;
 	/**
 	 * setzt alle Eigenschaften des Kontos auf Standardwerte
 	 */
@@ -25,7 +27,19 @@ public abstract class UeberweisungsfaehigesKonto extends Konto {
 	public UeberweisungsfaehigesKonto(Kunde inhaber, long kontonummer) {
 		super(inhaber, kontonummer);
 	}
-	
+
+	/**
+	 * Konstruktor für ein Überweisungskonto
+	 * @param inhaber der Kontoinhaber
+	 * @param kontonummer die gewünschte Kontonummer
+	 * @param bankleitzahl die Bankleitzahl der zugehörigen Bank
+	 * @throws IllegalArgumentException wenn der Inhaber null ist
+	 */
+	public UeberweisungsfaehigesKonto(Kunde inhaber, long kontonummer, long bankleitzahl) {
+		super(inhaber, kontonummer);  // Konstruktor der Oberklasse aufrufen
+		this.bankleitzahl = bankleitzahl;
+	}
+
 	/**
      * bucht den angegebenen Betrag von this als Überweisung ab, 
      * falls es nicht gesperrt ist und alle kontospezifischen 

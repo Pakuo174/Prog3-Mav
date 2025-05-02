@@ -1,10 +1,8 @@
 import bankprojekt.geld.Waehrung;
-import bankprojekt.verarbeitung.Geldbetrag;
-import bankprojekt.verarbeitung.GesperrtException;
-import bankprojekt.verarbeitung.Girokonto;
-import bankprojekt.verarbeitung.Kunde;
+import bankprojekt.verarbeitung.*;
 
 
+import bankprojekt.verwaltung.Bank;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -132,7 +130,6 @@ public class Tests {
         System.out.println("____________- 109.8269 Escudo________________");
         System.out.println(k1);
     }
-
 
 
 

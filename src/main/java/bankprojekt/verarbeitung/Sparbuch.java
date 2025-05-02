@@ -77,6 +77,16 @@ import java.time.LocalDate;
 		this.kalender = kalender;
 		zeitpunkt = kalender.getHeutigesDatum();
 	}
+
+	public Sparbuch(Kunde inhaber, long kontonummer, long bankleitzahl,Kalender kalender) {
+		super(inhaber, kontonummer);  // Konstruktor der Oberklasse aufrufen
+		this.zinssatz = 0.03;
+		if(kalender == null)
+			throw new IllegalArgumentException();
+		this.kalender = kalender;
+		zeitpunkt = kalender.getHeutigesDatum();
+		this.bankleitzahl = bankleitzahl;
+	}
 	
 	@Override
 	public String toString()
