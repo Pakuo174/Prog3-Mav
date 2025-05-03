@@ -37,6 +37,7 @@ import java.time.LocalDate;
 	private Kalender kalender;
 
 	/**
+	 * *auch für das Datum des Erstellens des Kontos
 	 * Monat und Jahr der letzten Abhebung
 	 */
 	private LocalDate zeitpunkt; 
