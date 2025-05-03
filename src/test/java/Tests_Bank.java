@@ -185,5 +185,32 @@ public class Tests_Bank {
         assertNull(kontostandNichtExistierend, "Kontostand für nicht existierendes Konto sollte null sein");
     }
 
+    @Test
+    public void testGeldUeberweisen() throws GesperrtException {
+        Bank b1 = new Bank(1234567);
+
+        // Kunden erstellen
+        Kunde k1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
+        Kunde k2 = new Kunde("Nico", "Froelich", "Rathenow", LocalDate.of(2000, 12, 13));
+
+        // Girokontos erstellen
+        long kontonummer1 = b1.girokontoErstellen(k1);
+        long kontonummer2 = b1.girokontoErstellen(k2);
+
+        // Einzahlen auf das erste Konto
+        b1.geldEinzahlen(kontonummer1, new Geldbetrag(1000, Waehrung.EUR));
+
+        // Überweisung durchführen
+        boolean erfolg = b1.geldUeberweisen(kontonummer1, kontonummer2, new Geldbetrag(500, Waehrung.EUR), "Miete");
+
+        // Teste, ob die Überweisung erfolgreich war
+        assertTrue(erfolg, "Überweisung sollte erfolgreich sein");
+
+        // Teste, ob die Kontostände korrekt aktualisiert wurden
+        assertEquals(500, b1.getKontostand(kontonummer1).getBetrag(), "Kontostand von k1 sollte 500 Euro betragen");
+        assertEquals(500, b1.getKontostand(kontonummer2).getBetrag(), "Kontostand von k2 sollte 500 Euro betragen");
+    }
+
+
 
 }

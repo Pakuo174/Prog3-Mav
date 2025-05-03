@@ -150,5 +150,37 @@ public class Bank {
         return null;
     }
 
+    /**
+     * überweist den genannten Betrag vom überweisungsfähigen Konto mit der Nummer vonKontonr zum überweisungsfähigen Konto mit der Nummer nachKontonr
+     * **
+     * @param vonKontonr
+     * @param nachKontonr
+     * @param betrag
+     * @param verwendungszweck
+     * @return gibt zurück true, wenn die Überweisung geklappt hat
+     */
+    public boolean geldUeberweisen(long vonKontonr, long nachKontonr, Geldbetrag betrag, String verwendungszweck) throws GesperrtException {
+
+        Konto vonKonto = konten.get(vonKontonr);
+        Konto nachKonto = konten.get(nachKontonr);
+
+        // Überprüfe, ob beide Konten existieren
+        if (vonKonto == null || nachKonto == null) {
+            return false; // Falls eines der Konten nicht existiert
+        }
+
+        // Überprüfe, ob das Quellkonto genügend Guthaben hat
+        if (vonKonto.getKontostand().compareTo(betrag) < 0) {
+            return false; // Nicht genügend Guthaben
+        }
+        // Betrag vom Quellkonto abziehen
+        vonKonto.abheben(betrag);
+
+        // Betrag auf das Zielkonto einzahlen
+        nachKonto.einzahlen(betrag);
+
+        return true;
+    }
+
 
 }
