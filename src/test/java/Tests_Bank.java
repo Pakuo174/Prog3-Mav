@@ -211,6 +211,40 @@ public class Tests_Bank {
         assertEquals(500, b1.getKontostand(kontonummer2).getBetrag(), "Kontostand von k2 sollte 500 Euro betragen");
     }
 
+    /**
+     * soltle ein Fehler ausgeben da nicht über 500 dispo abeghoben werden dürfte
+     * @throws GesperrtException
+     */
+    @Test
+    public void testUeberweisenOhneGeldAufKonto() throws GesperrtException {
+        Bank b1 = new Bank(1234567);
+
+        // Kunden erstellen
+        Kunde k1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
+        Kunde k2 = new Kunde("Nico", "Froelich", "Rathenow", LocalDate.of(2000, 12, 13));
+
+        // Girokontos erstellen
+        long kontonummer1 = b1.girokontoErstellen(k1);
+        long kontonummer2 = b1.girokontoErstellen(k2);
+
+        // Einzahlen auf das erste Konto
+        //b1.geldEinzahlen(kontonummer1, new Geldbetrag(1000, Waehrung.EUR));
+
+
+        b1.geldEinzahlen(kontonummer1, new Geldbetrag(500, Waehrung.EUR));
+
+        // Überweisung durchführen
+        boolean erfolg = b1.geldUeberweisen(kontonummer1, kontonummer2, new Geldbetrag(1001, Waehrung.EUR), "AutoVersicherung");
+
+        assertFalse(erfolg,"Überweisung klappt nur bei ausreichenden Geldbetrag auf Konto");
+
+        System.out.println(b1.getAlleKonten());
+
+
+        }
+
+
+
 
 
 }

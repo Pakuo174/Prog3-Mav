@@ -152,11 +152,11 @@ public class Bank {
 
     /**
      * überweist den genannten Betrag vom überweisungsfähigen Konto mit der Nummer vonKontonr zum überweisungsfähigen Konto mit der Nummer nachKontonr
-     * **
-     * @param vonKontonr
-     * @param nachKontonr
-     * @param betrag
-     * @param verwendungszweck
+     * ** es wird auch drauf geachtet, dass wenn es ein Dispo fähiges Konto ist der dispo mit einbezogen wird
+     * @param vonKontonr Kontonummer von der Geld abgehoben wird
+     * @param nachKontonr Kontonummer die die abgehobene Geldmenge von vonKontonr erhält
+     * @param betrag Summe die Überwiesen werden soll
+     * @param verwendungszweck Hinweis wozo das Geld überwiesen wird
      * @return gibt zurück true, wenn die Überweisung geklappt hat
      */
     public boolean geldUeberweisen(long vonKontonr, long nachKontonr, Geldbetrag betrag, String verwendungszweck) throws GesperrtException {
@@ -165,16 +165,20 @@ public class Bank {
         Konto nachKonto = konten.get(nachKontonr);
 
         // Überprüfe, ob beide Konten existieren
-        if (vonKonto == null || nachKonto == null) {
-            return false; // Falls eines der Konten nicht existiert
+        if (vonKonto == null || nachKonto == null || betrag == null || betrag.isNegativ()) {
+            return false;
         }
 
-        // Überprüfe, ob das Quellkonto genügend Guthaben hat
-        if (vonKonto.getKontostand().compareTo(betrag) < 0) {
-            return false; // Nicht genügend Guthaben
+        boolean erfolgreich;
+        if (vonKonto instanceof Girokonto giro) {
+            erfolgreich = giro.abheben(betrag);
+        } else {
+            erfolgreich = this.geldAbheben(vonKontonr,betrag);
         }
-        // Betrag vom Quellkonto abziehen
-        vonKonto.abheben(betrag);
+
+        if (!erfolgreich) {
+            return false;
+        }
 
         // Betrag auf das Zielkonto einzahlen
         nachKonto.einzahlen(betrag);
