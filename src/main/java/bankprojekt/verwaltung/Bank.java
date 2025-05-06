@@ -44,7 +44,7 @@ public class Bank {
             throw new IllegalArgumentException("Inhaber darf nicht null sein");
         }
         long neueNummer = ++letzteKontonummer;
-        Konto konto = new Girokonto(inhaber, neueNummer, this.getBankleitzahl(), new Geldbetrag(500));
+        Girokonto konto = new Girokonto(inhaber, neueNummer, this.getBankleitzahl(), new Geldbetrag(500));
         konten.put(neueNummer, konto);
         return neueNummer;
     }
@@ -64,7 +64,7 @@ public class Bank {
             throw new IllegalArgumentException("Inhaber darf nicht null sein");
         }
         long neueNummer = ++letzteKontonummer;
-        Konto konto = new Sparbuch(inhaber, neueNummer, this.getBankleitzahl(), new Kalender());
+        Sparbuch konto = new Sparbuch(inhaber, neueNummer, this.getBankleitzahl(), new Kalender());
         konten.put(neueNummer, konto);
         return neueNummer;
     }
