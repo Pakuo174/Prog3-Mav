@@ -4,13 +4,14 @@ import bankprojekt.verarbeitung.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class Bank {
 
 
     private long bankleitzahl;
     // Long = Typ für Schlüssel , Datentyp als Referenz auf ein konkretes Kontoobjekt, z.B. Sparbuch oder Girokonto
-    public Map<Long, Konto> konten;
+    private Map<Long, Konto> konten;
     private long letzteKontonummer = 0;
 
 
@@ -24,6 +25,10 @@ public class Bank {
         this.konten = new HashMap<>();  // Initialisierung der Map
     }
 
+    /**
+     * gibt die bankleitzahl einer Bank Instanz zurück
+     * @return bankleitzahl Wert von einer Instanz von Bank
+     */
     public long getBankleitzahl() {
         return bankleitzahl;
 
@@ -31,13 +36,12 @@ public class Bank {
 
     /**
      * erstellt ein Girokonto für den angegebenen Kunden. Dabei soll die Methode eine beliebige neue, noch nicht vergebene Kontonummer erzeugen
-     * * Das Konto erhält eine automatisch generierte Kontonummer - beginnend bei 1 - diese ist gleichzeitig der Schlüssel in der HashMap
+     * * Das Konto erhält eine automatisch generierte Kontonummer - beginnend bei 1
      * * Erstellt ein Girokonto mit einem Standard-Dispositionskredit von 500 Euro.
      * <p>
-     * *++letzteKontunummer erhöht den Wert immer +1 und speichert ihn für das nächste Konto im Attribut ab
-     *
      * @param inhaber definiert eine Instanz der Klasse Kunde
      * @return ist die neue Kontonummer
+     * @exception IllegalArgumentException wird geworfen wenn Ein Kunde nur mit null Werten übergeben wird
      */
     public long girokontoErstellen(Kunde inhaber) {
         if (inhaber == null) {
@@ -57,7 +61,7 @@ public class Bank {
      *
      * @param inhaber Der Kontoinhaber des neuen Sparbuchs.
      * @return Die neu vergebene Kontonummer.
-     * @throws IllegalArgumentException wenn der Inhaber {@code null} ist.
+     * @throws IllegalArgumentException wenn der Inhaber ist.
      */
     public long sparbuchErstellen(Kunde inhaber) {
         if (inhaber == null) {
@@ -96,6 +100,7 @@ public class Bank {
      *
      * @param auf    dient als Parameter um auf die MAP zuzugreifen und get.... zu nutzen
      * @param betrag ist der Betrag um den das Konto erhöht werden soll
+     * @exception IllegalArgumentException wird geworfen wenn das konto null ist
      */
     public void geldEinzahlen(long auf, Geldbetrag betrag) {
         Konto konto = konten.get(auf);
@@ -109,18 +114,18 @@ public class Bank {
     /**
      * hebt den Betrag vom Konto mit der Nummer von ab und gibt zurück, ob die Abhebung geklappt hat
      *
-     * @param von
-     * @param betrag
-     * @return
+     * @param von Konto von welches Geld abgehoben werden soll
+     * @param betrag Betrag welcher abgezogen wird
+     * @return true wenn abgehen funktioniert hat
      * @throws GesperrtException
+     * @exception IllegalArgumentException wenn das Konto null ist
      */
     public boolean geldAbheben(long von, Geldbetrag betrag) throws GesperrtException {
         Konto konto = konten.get(von);
         if (konto == null) {
             throw new IllegalArgumentException("Kein Konto mit der Nummer: " + von);
         }
-        konto.abheben(betrag);
-        return true;
+        return konto.abheben(betrag);
     }
 
     /**
@@ -141,9 +146,13 @@ public class Bank {
      * Gibt den Kontostand des Kontos mit der angegebenen Nummer zurück.
      * @param nummer die Kontonummer
      * @return der Kontostand, oder null wenn kein Konto mit dieser Nummer existiert
+     * @exception NoSuchElementException wenn das Konto als Element in der Map nicht vorhanden ist
      */
     public Geldbetrag getKontostand(long nummer) {
         Konto konto = konten.get(nummer);
+        if (konto == null) {
+            throw new NoSuchElementException("Kein Konto mit der Nummer: " + nummer);
+        }
         if (konto != null) {
             return konto.getKontostand();
         }
@@ -165,10 +174,12 @@ public class Bank {
         Konto nachKonto = konten.get(nachKontonr);
 
         // Überprüfe, ob beide Konten existieren
-        if (vonKonto == null || nachKonto == null || betrag == null || betrag.isNegativ()) {
-            return false;
+        if (vonKonto == null || nachKonto == null) {
+            throw new IllegalArgumentException("Konto´s dürfen nicht null sein");
         }
-
+        if ( betrag == null || betrag.isNegativ()){
+            throw new IllegalArgumentException("Betrag darf nicht null oder negativ sein");
+        }
         boolean erfolgreich;
         if (vonKonto instanceof Girokonto giro) {
             erfolgreich = giro.abheben(betrag);

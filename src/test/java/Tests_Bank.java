@@ -28,7 +28,7 @@ public class Tests_Bank {
         System.out.println("Neue Kontonummer: " + kontonummer);  // Kontonummer des erstellten Girokontos ausgeben
 
         // Anzahl der Konten in der Map ausgeben
-        System.out.println("Anzahl der Konten in der Bank: " + b1.konten.size());
+        System.out.println("Anzahl der Konten in der Bank: " + b1.getAlleKonten());
 
     }
 
@@ -57,7 +57,7 @@ public class Tests_Bank {
         System.out.println("Neue Kontonummer: " + kontonummer2);
 
         // Anzahl der Konten in der Map ausgeben
-        System.out.println("Anzahl der Konten in der Bank: " + b1.konten.size());
+        System.out.println("Anzahl der Konten in der Bank: " + b1.getAlleKonten());
     }
 
 
@@ -85,7 +85,7 @@ public class Tests_Bank {
         System.out.println("Neue Kontonummer: " + kontonummer2);
 
         // Anzahl der Konten in der Map ausgeben
-        System.out.println("Anzahl der Konten in der Bank: " + b1.konten.size());
+        System.out.println("Anzahl der Konten in der Bank: " + b1.getAlleKonten());;
     }
 
     @Test
