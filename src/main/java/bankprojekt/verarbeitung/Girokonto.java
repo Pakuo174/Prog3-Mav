@@ -74,9 +74,7 @@ public class Girokonto extends UeberweisungsfaehigesKonto{
 	}
 	
 	@Override
-    public boolean ueberweisungAbsenden(Geldbetrag betrag, 
-    		String empfaenger, long nachKontonr, 
-    		long nachBlz, String verwendungszweck) 
+	public boolean ueberweisungAbsenden(Geldbetrag betrag, String empfaenger, long nachKontonr, long nachBlz, String verwendungszweck)
     				throws GesperrtException 
     {
       if (this.isGesperrt())

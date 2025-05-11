@@ -2,9 +2,7 @@ package bankprojekt.verwaltung;
 
 import bankprojekt.verarbeitung.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class Bank {
 
@@ -96,6 +94,18 @@ public class Bank {
     }
 
     /**
+     * um eine Liste zu ersellten die alle Kontonumemrn erhält
+     * @return Liste mit Kontonummern
+     */
+    /**
+     * Liefert eine Liste aller gültigen Kontonummern in der Bank.
+     * @return Liste mit Kontonummern
+     */
+    public List<Long> getAlleKontonummern() {
+        return new ArrayList<>(konten.keySet());
+    }
+
+    /**
      * zahlt den angegebenen Betrag auf das Konto mit der Nummer auf ein
      *
      * @param auf    dient als Parameter um auf die MAP zuzugreifen und get.... zu nutzen
@@ -180,20 +190,29 @@ public class Bank {
         if ( betrag == null || betrag.isNegativ()){
             throw new IllegalArgumentException("Betrag darf nicht null oder negativ sein");
         }
-        boolean erfolgreich;
-        if (vonKonto instanceof Girokonto giro) {
-            erfolgreich = giro.abheben(betrag);
-        } else {
-            erfolgreich = this.geldAbheben(vonKontonr,betrag);
+        if (!(vonKonto instanceof Girokonto giroSenden)) {
+            return false; // Nur Girokonto kann Überweisungen senden
         }
+
+        if (!(nachKonto instanceof Girokonto giroEmpfangen)) {
+            return false; // Nur Girokonto kann Überweisungen senden
+        }
+
+        boolean erfolgreich = giroSenden.ueberweisungAbsenden(
+                betrag,
+                nachKonto.getInhaber().getName(),
+                nachKonto.getKontonummer(),
+                this.getBankleitzahl(),  // falls Konto diese Methode hat, sonst this.getBankleitzahl()
+                verwendungszweck
+        );
 
         if (!erfolgreich) {
             return false;
         }
 
         // Betrag auf das Zielkonto einzahlen
-        nachKonto.einzahlen(betrag);
 
+        giroEmpfangen.ueberweisungEmpfangen(betrag, vonKonto.getInhaber().getName(), vonKonto.getKontonummer(),this.getBankleitzahl(),verwendungszweck);
         return true;
     }
 

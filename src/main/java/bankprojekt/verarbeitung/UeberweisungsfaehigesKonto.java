@@ -58,10 +58,7 @@ public abstract class UeberweisungsfaehigesKonto extends Konto {
      * @throws IllegalArgumentException wenn der Betrag negativ bzw. NaN bzw. unendlich ist oder
      * 					empfaenger oder verwendungszweck null ist
      */
-    public abstract boolean ueberweisungAbsenden(Geldbetrag betrag, 
-    		String empfaenger, long nachKontonr, 
-    		long nachBlz, String verwendungszweck) 
-    				throws GesperrtException;
+    public abstract boolean ueberweisungAbsenden(Geldbetrag betrag, String empfaenger, long nachKontonr, long nachBlz, String verwendungszweck)  throws GesperrtException;
     
     /**
      * this empfängt den angegebenen betrag per Überweisung
