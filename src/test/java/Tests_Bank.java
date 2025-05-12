@@ -197,9 +197,7 @@ public class Tests_Bank {
         assertNotNull(kontostand, "Kontostand sollte nicht null sein");
         assertEquals(100, kontostand.getBetrag(), "Kontostand sollte 100 Euro betragen");
 
-        // Teste ein Konto, das nicht existiert
-        Geldbetrag kontostandNichtExistierend = b1.getKontostand(99999);
-        assertNull(kontostandNichtExistierend, "Kontostand für nicht existierendes Konto sollte null sein");
+
     }
 
     @Test

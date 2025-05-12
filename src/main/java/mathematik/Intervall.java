@@ -1,11 +1,11 @@
 package mathematik;
 
 /**
- * Ein generisches Intervall für beliebige Typen {T}, die mit sich selbst oder mit einer ihrer Oberklassen vergleichbar sind.
+ * Ein generisches Intervall für beliebige Typen {@code T}, die mit sich selbst oder mit einer ihrer Oberklassen vergleichbar sind.
  * <p>
- * Der Typparameter {T} muss {Comparable<? super T>} implementieren, damit {compareTo} auf {T}-Objekten verwendet werden kann.
- * Dies erlaubt auch spezielle Typen wie {java.sql.Time}, die Comparable<java.util.Date>} implementieren,
- * obwohl sie nicht direkt {Comparable<Time>} sind.
+ * Der Typparameter {@code T} muss {@code Comparable<? super T>} implementieren, damit {@code compareTo} auf {@code T}-Objekten verwendet werden kann.
+ * Dies erlaubt auch spezielle Typen wie {@link java.sql.Time}, die {@code Comparable<java.util.Date>} implementieren,
+ * obwohl sie nicht direkt {@code Comparable<Time>} sind.
  *
  * @param <T> der Typ der Intervallgrenzen, muss mit sich selbst oder einer Oberklasse vergleichbar sein
  */
@@ -58,9 +58,9 @@ public class Intervall<T extends Comparable<? super T>> {
     /**
      * Bildet ein Schnittmengen-Intervall von {@code this} und {@code anderes}.
      *
-     * Zur Compile-Zeit wird durch {<A extends Comparable<? super A>>} sichergestellt,
+     * Zur Compile-Zeit wird durch {@code <A extends Comparable<? super A>>} sichergestellt,
      * dass der Typ A mit sich selbst oder einer seiner Oberklassen vergleichbar ist (kontravarianter Vergleich).
-     * Das erlaubt auch Typen wie {java.sql.Time}, die {Comparable<java.util.Date>} implementieren.
+     * Das erlaubt auch Typen wie {@link java.sql.Time}, die {@code Comparable<java.util.Date>} implementieren.
      *
      * @param anderes Das übergebene Intervall, mit dem das Schnittmengen-Intervall gebildet werden soll.
      * @param <A> Der Typ A des übergebenen Intervalls muss das Interface {@code Comparable<? super A>} implementieren,
