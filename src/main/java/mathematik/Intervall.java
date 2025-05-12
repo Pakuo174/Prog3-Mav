@@ -1,10 +1,15 @@
 package mathematik;
 
 /**
- * generische Typ T das Interface Comparable<T> implementiert - damit compareTo genutz werden kann
- * @param <T>
+ * Ein generisches Intervall für beliebige Typen {T}, die mit sich selbst oder mit einer ihrer Oberklassen vergleichbar sind.
+ * <p>
+ * Der Typparameter {T} muss {Comparable<? super T>} implementieren, damit {compareTo} auf {T}-Objekten verwendet werden kann.
+ * Dies erlaubt auch spezielle Typen wie {java.sql.Time}, die Comparable<java.util.Date>} implementieren,
+ * obwohl sie nicht direkt {Comparable<Time>} sind.
+ *
+ * @param <T> der Typ der Intervallgrenzen, muss mit sich selbst oder einer Oberklasse vergleichbar sein
  */
-public class Intervall <T extends Comparable<T>> {
+public class Intervall<T extends Comparable<? super T>> {
 
     private T untereGrenze;
     private T obereGrenze;
@@ -51,28 +56,43 @@ public class Intervall <T extends Comparable<T>> {
     }
 
     /**
-     * bildet ein Schnittmengen-Intervall von this und anderes
-     * @param anderes
-     * @return ein neues Intervall mit dem Schnitt aus dem this und anderes
-     * @param <A>
+     * Bildet ein Schnittmengen-Intervall von {@code this} und {@code anderes}.
+     *
+     * Zur Compile-Zeit wird durch {<A extends Comparable<? super A>>} sichergestellt,
+     * dass der Typ A mit sich selbst oder einer seiner Oberklassen vergleichbar ist (kontravarianter Vergleich).
+     * Das erlaubt auch Typen wie {java.sql.Time}, die {Comparable<java.util.Date>} implementieren.
+     *
+     * @param anderes Das übergebene Intervall, mit dem das Schnittmengen-Intervall gebildet werden soll.
+     * @param <A> Der Typ A des übergebenen Intervalls muss das Interface {@code Comparable<? super A>} implementieren,
+     *           damit A mit sich selbst oder einer Oberklasse vergleichbar ist.
+     * @return Ein neues Intervall, das den Schnitt von {@code this} und {@code anderes} darstellt,
+     *         oder {@code null}, wenn die Intervalle disjunkt sind.
      */
-    public <A extends Comparable<A>> Intervall<T> schnitt(Intervall<A> anderes) {
+    public <A extends Comparable<? super A>> Intervall<T> schnitt(Intervall<A> anderes) {
 
 
             T andereUntere = (T) anderes.getUntereGrenze();
             T andereObere = (T) anderes.getObereGrenze();
 
-            T neueUntereGrenze = (this.untereGrenze.compareTo(andereUntere) > 0)
-                    ? this.untereGrenze : andereUntere;
+        T neueUntereGrenze;
+        if (this.untereGrenze.compareTo(andereUntere) > 0) {
+            neueUntereGrenze = this.untereGrenze;
+        } else {
+            neueUntereGrenze = andereUntere;
+        }
 
-            T neueObereGrenze = (this.obereGrenze.compareTo(andereObere) < 0)
-                    ? this.obereGrenze : andereObere;
+        T neueObereGrenze;
+        if ( this.obereGrenze.compareTo(andereObere) < 0){
+            neueObereGrenze = this.obereGrenze;
+        }else {
+            neueObereGrenze = andereObere;
+        }
 
             if (neueUntereGrenze.compareTo(neueObereGrenze) > 0) {
                 return null;
             }
 
-            return new Intervall<>(neueUntereGrenze, neueObereGrenze);
+            return new Intervall<T>(neueUntereGrenze, neueObereGrenze);
         }
     }
 
