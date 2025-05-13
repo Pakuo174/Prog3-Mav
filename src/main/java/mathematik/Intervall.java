@@ -30,10 +30,18 @@ public class Intervall<T extends Comparable<? super T>> {
         this.obereGrenze = obereGrenze;
     }
 
+    /**
+     *
+     * @return gibt den Wert der Obergrenze des aufrufenden Objektes zurück
+     */
     public T getObereGrenze() {
         return obereGrenze;
     }
 
+    /**
+     *
+     * @return gibt den Wert der Untergrenze des aufrufenden Objektes zurück
+     */
     public T getUntereGrenze() {
         return untereGrenze;
     }
@@ -47,13 +55,13 @@ public class Intervall<T extends Comparable<? super T>> {
     }
 
     /**
-     * prüft, ob wert im Intervall enthalten ist, d.h. ob wert größer als die untere Grenze des
-     * Intervalles ist und kleiner als die obere
+     * Prüft, ob ein gegebener Wert innerhalb des Intervalls liegt – also
+     * größer oder gleich der unteren Grenze und kleiner oder gleich der oberen Grenze ist.
      *
-     * E muss dabei ein Subtyp von T sein
-     * @param wert dient als Wert um das Intervall zu untersuchen
-     * @return true wenn es enthalten ist
-     * @param <E> muss ein Subtyp von T sein ➡️ Das ist ein Upper Bound ➡️ "E darf maximal T sein."
+     * @param wert der zu überprüfende Wert
+     * @param <E> ein generischer Typ, der mit T vergleichbar sein muss
+     *            (E muss also T oder ein Obertyp von T sein und Comparable von T implementieren)
+     * @return true, wenn der Wert im Intervall liegt, sonst false
      */
      public <E extends Comparable<? super T>> boolean enthaelt(E wert){
 
@@ -62,23 +70,16 @@ public class Intervall<T extends Comparable<? super T>> {
     }
 
     /**
-     * Bildet ein Schnittmengen-Intervall von {@code this} und {@code anderes}.
-     *
-     * Zur Compile-Zeit wird durch {@code <A extends Comparable<? super A>>} sichergestellt,
-     * dass der Typ A mit sich selbst oder einer seiner Oberklassen vergleichbar ist (kontravarianter Vergleich).
-     * Das erlaubt auch Typen wie {@link java.sql.Time}, die {@code Comparable<java.util.Date>} implementieren.
-     *
-     * @param anderes Das übergebene Intervall, mit dem das Schnittmengen-Intervall gebildet werden soll.
-     * @param <A> Der Typ A des übergebenen Intervalls muss das Interface {@code Comparable<? super A>} implementieren,
-     *           damit A mit sich selbst oder einer Oberklasse vergleichbar ist.
-     * @return Ein neues Intervall, das den Schnitt von {@code this} und {@code anderes} darstellt,
-     *         oder {@code null}, wenn die Intervalle disjunkt sind.
+     * Bildet den Schnitt mit einem anderen Intervall.
+     * @param anderes Das andere Intervall mit Grenzen vom Typ T oder Subtyp.
+     * @return Ein neues Intervall-Objekt mit der Schnittmenge (evtl. leer).
+     * @param <A> des Intervalls-Objektes muss T oder ein Subtyp von sein 
      */
-    public <A extends Comparable<? super A>> Intervall<T> schnitt(Intervall<A> anderes) {
+    public <A extends T> Intervall<T> schnitt(Intervall<A> anderes) {
 
 
-            T andereUntere = (T) anderes.getUntereGrenze();
-            T andereObere = (T) anderes.getObereGrenze();
+            T andereUntere = anderes.getUntereGrenze();
+            T andereObere = anderes.getObereGrenze();
 
         T neueUntereGrenze;
         if (this.untereGrenze.compareTo(andereUntere) > 0) {
@@ -95,10 +96,10 @@ public class Intervall<T extends Comparable<? super T>> {
         }
 
             if (neueUntereGrenze.compareTo(neueObereGrenze) > 0) {
-                return null;
+                return new Intervall<>(neueUntereGrenze, neueObereGrenze); // auch wenn leer
             }
 
-            return new Intervall<T>(neueUntereGrenze, neueObereGrenze);
+            return new Intervall<>(neueUntereGrenze, neueObereGrenze);
         }
     }
 
