@@ -11,6 +11,7 @@ package mathematik;
  */
 public class Intervall<T extends Comparable<? super T>> {
 
+
     private T untereGrenze;
     private T obereGrenze;
 
@@ -18,6 +19,7 @@ public class Intervall<T extends Comparable<? super T>> {
      * Konstuktor zum erzeugen von Intervall-Instanzen
      * @param untereGrenze soll die untere Grenze des Intervalls sein
      * @param obereGrenze soll die obere Grenze des Intervalls sein
+     * @throws IllegalArgumentException, wenn bei den Grenzen der Wert null wäre
      */
     public Intervall (T untereGrenze, T obereGrenze){
        if (untereGrenze == null || obereGrenze == null){
@@ -36,6 +38,10 @@ public class Intervall<T extends Comparable<? super T>> {
         return untereGrenze;
     }
 
+    /**
+     * prüft,ob das Intervall leer ist
+     * @return true, wenn die obereGrenze kleiner ist als die untereGrenze
+     */
     public boolean isLeer() {
         return obereGrenze.compareTo(untereGrenze) < 0;
     }
@@ -49,7 +55,7 @@ public class Intervall<T extends Comparable<? super T>> {
      * @return true wenn es enthalten ist
      * @param <E> muss ein Subtyp von T sein ➡️ Das ist ein Upper Bound ➡️ "E darf maximal T sein."
      */
-    public <E extends T> boolean enthaelt(E wert){
+     public <E extends Comparable<? super T>> boolean enthaelt(E wert){
 
             return wert.compareTo(untereGrenze) >= 0 && wert.compareTo(obereGrenze) <= 0;
 
