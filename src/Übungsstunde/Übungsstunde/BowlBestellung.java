@@ -66,6 +66,4 @@ public class BowlBestellung {
         }
         return bowl;
     }
-
-
 }

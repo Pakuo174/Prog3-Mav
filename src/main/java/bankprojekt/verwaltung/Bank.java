@@ -71,6 +71,17 @@ public class Bank {
         return neueNummer;
     }
 
+    /**
+     * Methode dient für Mocking-OBjekte
+     * @param k ist ein Konto
+     * @return Die neu vergebene Kontonummer.
+     */
+    public long mockEinfuegen(Konto k){
+        long neueNummer = ++letzteKontonummer;
+        konten.put(neueNummer, k);
+        return neueNummer;
+    }
+
 
     public String getAlleKonten() {
         StringBuilder sb = new StringBuilder();
@@ -168,6 +179,8 @@ public class Bank {
         }
         return null;
     }
+
+
 
     /**
      * überweist den genannten Betrag vom überweisungsfähigen Konto mit der Nummer vonKontonr zum überweisungsfähigen Konto mit der Nummer nachKontonr

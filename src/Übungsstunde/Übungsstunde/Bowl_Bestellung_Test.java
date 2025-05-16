@@ -20,10 +20,10 @@ public class Bowl_Bestellung_Test {
         //SetUp:
 
         // Setup: Mocks
-        Kommunikation komm = mock(Kommunikation.class);
-        EingabeParser parser = mock(EingabeParser.class);
-        BowlBuilder builder = mock(BowlBuilder.class);
-        Bowl bowl = mock(Bowl.class);
+        Kommunikation komm = mock();
+        EingabeParser parser = mock();
+        BowlBuilder builder = mock();
+        Bowl bowl = mock();
 
 
         when(komm.fragen(BowlBestellung.FRAGE)).thenReturn("Karotten, Rucola, Kürbiskerne");
@@ -31,17 +31,17 @@ public class Bowl_Bestellung_Test {
         when(builder.build()).thenReturn(bowl);
         when(bowl.getPreis()).thenReturn(5.99);
 
-        // BowlBestellung instanziieren
+        // Setup: BowlBestellung instanziieren
         BowlBestellung bestellung = new BowlBestellung(komm, builder, parser);
 
-        // Methode testen
+        // Exercise: Methode testen
         Bowl result = bestellung.bestellungDurchfuehren();
 
-        // Überprüfen, ob die Kommunikation korrekt verwendet wurde
+        // Verify: Überprüfen, ob die Kommunikation korrekt verwendet wurde
         verify(komm).fragen(BowlBestellung.FRAGE);
         verify(komm).ausgeben("Deine Bowl kostet 5.99");
 
-        // Bowl darf nicht null sein
+        // Verify: Bowl darf nicht null sein
         assertEquals(bowl, result); // Erwartung: diese Bowl wurde zurückgegeben
         assertNotNull(result);
 
