@@ -16,10 +16,11 @@ public class Intervall<T extends Comparable<? super T>> {
     private T obereGrenze;
 
     /**
-     * Konstuktor zum erzeugen von Intervall-Instanzen
-     * @param untereGrenze soll die untere Grenze des Intervalls sein
-     * @param obereGrenze soll die obere Grenze des Intervalls sein
-     * @throws IllegalArgumentException, wenn bei den Grenzen der Wert null wäre
+     * Konstruktor zum Erzeugen von Intervall-Instanzen.
+     *
+     * @param untereGrenze die untere Grenze des Intervalls
+     * @param obereGrenze die obere Grenze des Intervalls
+     * @throws IllegalArgumentException wenn bei den Grenzen der Wert {@code null} ist
      */
     public Intervall (T untereGrenze, T obereGrenze){
        if (untereGrenze == null || obereGrenze == null){

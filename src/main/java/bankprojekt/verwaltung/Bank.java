@@ -203,6 +203,10 @@ public class Bank {
         if ( betrag == null || betrag.isNegativ()){
             throw new IllegalArgumentException("Betrag darf nicht null oder negativ sein");
         }
+        if (verwendungszweck == null){
+            throw new IllegalArgumentException("Verwendungszweck darf nicht null sein");
+        }
+
         if (!(vonKonto instanceof Girokonto giroSenden)) {
             return false; // Nur Girokonto kann Überweisungen senden
         }
