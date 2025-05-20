@@ -3,6 +3,7 @@ import bankprojekt.verarbeitung.*;
 import bankprojekt.verwaltung.Bank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
@@ -13,7 +14,12 @@ import static org.mockito.Mockito.*;
 public class Tests_Mock {
 
 
-    private Bank bank;
+    Bank bank;
+    Kunde kunde, kundeGesperrt, kundeEmpfang;
+
+    long nrGiro, nrGiroGesperrt, nrGiroNichtGedeckt, nrGiroEmpfang;
+    UeberweisungsfaehigesKonto kontoGiro, kontoGiroGesperrt, kontoGiroNichtGedeckt;
+
 
     @BeforeEach
     void setUp() {
@@ -90,7 +96,7 @@ public class Tests_Mock {
         when(kontoMock2.getInhaber()).thenReturn(new Kunde("Erika", "Musterfrau", "nullte Weg 000", LocalDate.now()));
 
         when(kontoMock1.ueberweisungAbsenden(
-                any(Geldbetrag.class),
+                ArgumentMatchers.any(Geldbetrag.class),
                 anyString(),
                 anyLong(),
                 anyLong(),
@@ -145,9 +151,11 @@ public class Tests_Mock {
         // Exercise & Assert (klassisch)
         try {
             bank.geldUeberweisen(kontonummer1, kontonummer2, null, "Zweck");
+            fail("Exception ist nicht aufgetreten");
         } catch (IllegalArgumentException ex) {
 
         }
+        assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, kontonummer2, null, "Zweck"));
 
         // Verify: Überweisungsmethoden dürfen nicht aufgerufen -> never als VerifivationMode bestätigt dies
         verify(kontoMock1, atMost(0)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
