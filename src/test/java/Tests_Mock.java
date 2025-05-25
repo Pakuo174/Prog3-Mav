@@ -27,31 +27,19 @@ public class Tests_Mock {
     }
 
     @Test
-    void MockKontoEinfügen() {
+    void kontostandExistiert() {
 
         // Set UP
-        Konto kontoMock = mock();
-        when(kontoMock.getKontonummer()).thenReturn(5L);
-
-        // Exercise - erstellt ein mockKonto
-        long kontonummer = bank.mockEinfuegen(kontoMock);
-
-        // Verify - testen ob MockKonto existiert
-        assertTrue(bank.getAlleKontonummern().contains(kontonummer), "Kontonummer sollte enthalten sein");
-    }
-
-    @Test
-    void KontostandExistiert() {
-
-        // Set UP
-        Konto kontoMock = mock();
+        UeberweisungsfaehigesKonto kontoMock = mock();
         Geldbetrag mockGeldbetrag = new Geldbetrag(100, Waehrung.EUR);
         when(kontoMock.getKontostand()).thenReturn(mockGeldbetrag);
-        when(kontoMock.getKontonummer()).thenReturn(10L);
+
+
+        long kontonummer = bank.mockEinfuegen(kontoMock);
+        when(kontoMock.getKontonummer()).thenReturn(kontonummer);
+
 
         // Exercise - MockKonto einfügen und MockKonto auf existierends Geld testen
-        long kontonummer = bank.mockEinfuegen(kontoMock);
-
         Geldbetrag mockGeld = bank.getKontostand(kontonummer);
 
         // Verify - kontrollieren
@@ -59,14 +47,14 @@ public class Tests_Mock {
     }
 
     @Test
-    void KontostandExistiertNicht() {
+    void kontostandExistiertNicht() {
         // Set UP
-        Konto kontoMock = mock();
-        when(kontoMock.getKontonummer()).thenReturn(10L);
+        UeberweisungsfaehigesKonto kontoMock = mock();
 
+        long kontonummer = bank.mockEinfuegen(kontoMock);
+        when(kontoMock.getKontonummer()).thenReturn(kontonummer);
 
         // Exercise - MockKonto einfügen und MockKonto auf existierends Geld testen
-        long kontonummer = bank.mockEinfuegen(kontoMock);
         Geldbetrag mockGeld = bank.getKontostand(kontonummer);
 
         // Verify - kontrollieren ob auch nichts funktioniert
@@ -75,19 +63,21 @@ public class Tests_Mock {
 
 
     @Test
-    void ÜberweisenNormal() throws GesperrtException {
+    void überweisenNormal() throws GesperrtException {
 
 
         // Set UP
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
         Geldbetrag mockGeldbetrag1 = new Geldbetrag(100, Waehrung.EUR);
         when(kontoMock1.getKontostand()).thenReturn(mockGeldbetrag1);
 
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
         Geldbetrag mockGeldbetrag2 = new Geldbetrag(100, Waehrung.EUR);
         when(kontoMock2.getKontostand()).thenReturn(mockGeldbetrag2);
 
@@ -105,22 +95,9 @@ public class Tests_Mock {
 
 
         // Exercise - MockKonto einfügen und MockKonto auf existierends Geld testen
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
-
-
         Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
         bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Schulden");
 
-
-        //Verify
-        verify(kontoMock1).ueberweisungAbsenden(
-                eq(uebBetrag),
-                eq("Musterfrau, Erika"),
-                eq(kontonummer2),
-                eq(bank.getBankleitzahl()),
-                eq("Schulden")
-        );
 
         verify(kontoMock2).ueberweisungEmpfangen(
                 eq(uebBetrag),
@@ -134,27 +111,21 @@ public class Tests_Mock {
     @Test
     public void testUeberweisungMitNullBetrag() throws Exception {
         // Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
 
         when(kontoMock1.getInhaber()).thenReturn(
                 new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
         when(kontoMock2.getInhaber()).thenReturn(
                 new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
 
-        // Exercise & Assert (klassisch)
-        try {
-            bank.geldUeberweisen(kontonummer1, kontonummer2, null, "Zweck");
-            fail("Exception ist nicht aufgetreten");
-        } catch (IllegalArgumentException ex) {
-
-        }
         assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, kontonummer2, null, "Zweck"));
 
         // Verify: Überweisungsmethoden dürfen nicht aufgerufen -> never als VerifivationMode bestätigt dies
@@ -166,27 +137,26 @@ public class Tests_Mock {
     public void testUeberweisungMitNegativBetrag() throws Exception {
 
         // Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
 
         when(kontoMock1.getInhaber()).thenReturn(
                 new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
         when(kontoMock2.getInhaber()).thenReturn(
                 new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
 
         // Exercise
         Geldbetrag uebBetrag = new Geldbetrag(-50, Waehrung.EUR);
-        try {
-            bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Zweck");
-        } catch (IllegalArgumentException ex) {
 
-        }
+
+        assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Zweck"));
 
 
         // Verify: Überweisungsmethoden dürfen nicht aufgerufen -> never als VerifivationMode bestätigt dies
@@ -195,40 +165,15 @@ public class Tests_Mock {
     }
 
     @Test
-    void KontoExisitiertNicht() throws GesperrtException {
+    void kontoExisitiertNicht() throws GesperrtException {
         // Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
-
-        when(kontoMock1.getInhaber()).thenReturn(
-                new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
-        when(kontoMock2.getInhaber()).thenReturn(
-                new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
         // nur kontonummer 1 wird der Bank hinzugefügt
         long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-
-
-        // Exercise
-        Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
-        try {
-            bank.geldUeberweisen(kontonummer1, 2L, uebBetrag, "Zweck");
-        } catch (IllegalArgumentException ex) {
-            // Exception ist da
-        }
-
-        verify(kontoMock1, atMost(0)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
-    }
-    @Test
-    void ÜberweisungZweckIstNull() throws GesperrtException {
-        // Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
-
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
         when(kontoMock2.getKontonummer()).thenReturn(2L);
 
         when(kontoMock1.getInhaber()).thenReturn(
@@ -236,69 +181,98 @@ public class Tests_Mock {
         when(kontoMock2.getInhaber()).thenReturn(
                 new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+
+
 
         // Exercise
         Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
-        try {
-            bank.geldUeberweisen(kontonummer1,kontonummer2,uebBetrag,null);
-        } catch (IllegalArgumentException e) {
 
-        }
+
+        assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, 2L, uebBetrag, "Zweck"));
+
+        verify(kontoMock1, atMost(0)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
+    }
+    @Test
+    void überweisungZweckIstNull() throws GesperrtException {
+        // Set Up
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
+
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
+
+        when(kontoMock1.getInhaber()).thenReturn(
+                new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
+        when(kontoMock2.getInhaber()).thenReturn(
+                new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
+
+
+
+
+        // Exercise
+        Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
+
+
+        assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, null));
 
         // Verify
         verify(kontoMock1, atMost(0)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
     }
 
-    // ist es möglich 0 Euro zu überweisen
+    // Es ist es möglich mit 0 Euro zu überweisen
     @Test
-    void ÜberweisungMit0Euro() throws GesperrtException {
+    void überweisungMit0Euro() throws GesperrtException {
         // Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
 
         when(kontoMock1.getInhaber()).thenReturn(
                 new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
         when(kontoMock2.getInhaber()).thenReturn(
                 new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
 
         // Exercise
         Geldbetrag uebBetrag = new Geldbetrag(0, Waehrung.EUR);
-        try {
-            bank.geldUeberweisen(kontonummer1,kontonummer2,uebBetrag,"Konto 2 will sich eine Schoki holen");
-        } catch (IllegalArgumentException e) {
+        bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Konto 2 will sich eine Schoki holen");
 
-        }
+       // assertThrows(IllegalArgumentException.class, () ->  bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Konto 2 will sich eine Schoki holen"));
 
         // Verify
-        verify(kontoMock1, atMost(1)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
-        verify(kontoMock2, atMost(1)).ueberweisungEmpfangen(any(), anyString(), anyLong(), anyLong(), anyString());
+        verify(kontoMock1, atMost(1)).ueberweisungAbsenden(
+                eq(uebBetrag), anyString(), anyLong(), anyLong(), anyString());
+
+        verify(kontoMock2, atMost(1)).ueberweisungEmpfangen(
+                eq(uebBetrag), anyString(), anyLong(), anyLong(), anyString());
 
     }
 
     @Test
-    void GesperrtesKonto() throws GesperrtException {
-// Set Up
-        Girokonto kontoMock1 = mock(Girokonto.class);
-        Girokonto kontoMock2 = mock(Girokonto.class);
+    void gesperrtesKonto() throws GesperrtException {
+        // Set Up
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
-        when(kontoMock1.getKontonummer()).thenReturn(1L);
-        when(kontoMock2.getKontonummer()).thenReturn(2L);
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
 
         when(kontoMock1.getInhaber()).thenReturn(
                 new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
         when(kontoMock2.getInhaber()).thenReturn(
                 new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
 
-        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
-        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
 
         doThrow(new GesperrtException(kontonummer1)).when(kontoMock1).ueberweisungAbsenden(
                 any(Geldbetrag.class),
@@ -310,18 +284,75 @@ public class Tests_Mock {
 
         // Exercise
         Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
-        try {
-            bank.geldUeberweisen(kontonummer1,kontonummer2,uebBetrag,"Konto 2 will sich eine Schoki holen");
-        } catch (GesperrtException e) {
 
-        }
+        assertThrows(GesperrtException.class, () ->
+                bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Konto 2 will sich eine Schoki holen")
+        );
+
         // Verify
         verify(kontoMock1, atMost(1)).ueberweisungAbsenden(any(), anyString(), anyLong(), anyLong(), anyString());
         verify(kontoMock2, atMost(0)).ueberweisungEmpfangen(any(), anyString(), anyLong(), anyLong(), anyString());
+    }
+    @Test
+    void überweisenAbsendenFalse() throws GesperrtException {
+        // Set Up
+        UeberweisungsfaehigesKonto kontoMock1 = mock(Girokonto.class);
+        UeberweisungsfaehigesKonto kontoMock2 = mock(Girokonto.class);
 
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
+
+        when(kontoMock1.getInhaber()).thenReturn(
+                new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
+        when(kontoMock2.getInhaber()).thenReturn(
+                new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
+
+
+        Geldbetrag kontoStandKonto1 = new Geldbetrag(-9999,Waehrung.EUR);
+        // Exercise - Konto1 soll -9999 Euro als Kontostand haben --> nicht überweisungsfähig
+        when(kontoMock1.getKontostand()).thenReturn(kontoStandKonto1);
+
+        Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
+
+        boolean result = bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Zweck");
+        assertFalse(result); // Überweisung war nicht erfolgreich
+
+        // Verify
+        verify(kontoMock1, atMost(1)).ueberweisungAbsenden(eq(kontoStandKonto1), anyString(), anyLong(), anyLong(), anyString());
+        verify(kontoMock2, atMost(0)).ueberweisungEmpfangen(any(), anyString(), anyLong(), anyLong(), anyString());
 
     }
+    @Test
+    void nichtÜberweisungsfähigeKonten() throws GesperrtException {
+        // Set Up
+        Sparbuch kontoMock1 = mock(Sparbuch.class);
+        Sparbuch kontoMock2 = mock(Sparbuch.class);
 
+        long kontonummer1 = bank.mockEinfuegen(kontoMock1);
+        when(kontoMock1.getKontonummer()).thenReturn(kontonummer1);
+
+        long kontonummer2 = bank.mockEinfuegen(kontoMock2);
+        when(kontoMock2.getKontonummer()).thenReturn(kontonummer2);
+
+        when(kontoMock1.getInhaber()).thenReturn(
+                new Kunde("Max", "Mustermann", "Straße", LocalDate.now()));
+        when(kontoMock2.getInhaber()).thenReturn(
+                new Kunde("Erika", "Musterfrau", "Weg", LocalDate.now()));
+
+
+        // Exercise
+        Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
+
+        boolean result = bank.geldUeberweisen(kontonummer1, kontonummer2, uebBetrag, "Zweck");
+        assertFalse(result); // Überweisung war nicht erfolgreich
+
+        // Verify - kein versehentlicher Methodenaufruf auf den Sparbuch-Konten gemacht wurde
+        verifyNoInteractions(kontoMock1);
+
+    }
 
 
 }

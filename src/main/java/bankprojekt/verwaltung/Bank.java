@@ -2,7 +2,9 @@ package bankprojekt.verwaltung;
 
 import bankprojekt.verarbeitung.*;
 
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Bank {
 
@@ -232,6 +234,78 @@ public class Bank {
         giroEmpfangen.ueberweisungEmpfangen(betrag, vonKonto.getInhaber().getName(), vonKonto.getKontonummer(),this.getBankleitzahl(),verwendungszweck);
         return true;
     }
+
+    /**
+     * die Methode zahlt auf alle Konten von Kunden, die in diesem Jahr 18 werden, den betrag ein
+     * @param betrag welcher auf die Konten mit einem Alter über 18 überwiesen werden soll
+     */
+    public void schenkungAnNeuerwachsene(Geldbetrag betrag){
+
+        if ( betrag == null || betrag.isNegativ()) {
+            throw new IllegalArgumentException("Betrag darf nicht null oder negativ sein");
+        }
+
+        int aktuellesJahr = LocalDate.now().getYear();
+
+        konten.values().stream()
+                .filter(konto -> konto.getInhaber().getGeburtstag().getYear() < aktuellesJahr - 18)
+                .forEach(konto -> konto.einzahlen(betrag));
+    }
+
+    /**
+     * Die Methode liefert eine Liste aller Kunden, die ein Konto mit negativem Kontostand haben
+     * @return
+     */
+    public List<Kunde> getKundenMitLeeremKonto(){
+
+       return konten.values().stream()
+                .filter(konto -> konto.getKontostand().isNegativ())
+                .map(konto -> new Kunde(konto.getInhaber().getVorname(),konto.getInhaber().getNachname(),konto.getInhaber().getAdresse(),konto.getInhaber().getGeburtstag()))
+                .distinct() // Optional: falls ein Kunde mehrere Konten hat
+                .toList(); // erstellt direkt die finale Liste.
+
+    }
+
+    /**
+     * liefert die Namen und Geburtstage aller Kunden der Bank
+     * Doppelte Kunden sollen dabei aussortiert werden
+     * Liste nach Monat und Tag des Geburtstages (nicht nach dem Geburtsjahr!)
+     * @return
+     *  Format jedes Eintrags: "Vorname Nachname – yyyy-MM-dd"
+     */
+    public String getKundengeburtstage() {
+        return konten.values().stream()
+                .map(Konto::getInhaber)
+                .distinct()
+                .sorted((k1, k2) -> {
+                    int monthCompare = Integer.compare(k1.getGeburtstag().getMonthValue(), k2.getGeburtstag().getMonthValue());
+                    if (monthCompare != 0) return monthCompare;
+                    return Integer.compare(k1.getGeburtstag().getDayOfMonth(), k2.getGeburtstag().getDayOfMonth());
+                })
+                .map(k -> k.getVorname() + " " + k.getNachname() + " – " + k.getGeburtstag())
+                .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * liefert die Anzahl der Kunden, die jetzt mindestens 67 sind
+     * @return
+     */
+    public long getAnzahlSenioren(){
+
+
+        return konten.values().stream()
+                .map(Konto::getInhaber)
+                //.map(konto -> new Kunde(konto.getInhaber().getVorname(),konto.getInhaber().getNachname(),konto.getInhaber().getAdresse(),konto.getInhaber().getGeburtstag()))
+                .distinct()
+                .filter(kunde -> kunde.getGeburtstag().isBefore(LocalDate.now().minusYears(67)) ||
+                        kunde.getGeburtstag().isEqual(LocalDate.now().minusYears(67)))
+                .count();
+
+    }
+
+
+
+
 
 
 }

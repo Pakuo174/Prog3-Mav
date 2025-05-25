@@ -70,7 +70,8 @@ public class StreamsUebung {
  */
         List<Kunde> b = kontenmap.values().stream()
                 .sorted((k1, k2) -> k1.getKontostand().compareTo(k2.getKontostand()) )
-                .map((konto -> konto.getInhaber()))
+               // .map((konto -> konto.getInhaber()))
+                .map(konto -> new Kunde(konto.getInhaber().getVorname(),konto.getInhaber().getNachname(),konto.getInhaber().getAdresse(),konto.getInhaber().getGeburtstag()))
                         .toList();
         System.out.println("b: " + b);
         System.out.println("-----------------");
