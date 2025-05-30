@@ -300,6 +300,10 @@ public class Bank {
                 .filter(kunde -> kunde.getGeburtstag().isBefore(LocalDate.now().minusYears(67)) ||
                         kunde.getGeburtstag().isEqual(LocalDate.now().minusYears(67)))
                 .count();
+                // .map(kunde ->1)             // aus jeden Kudne wird eine 1
+                // .reduce (0,(a,b)) -> a+b;  // addere dieses einsen miteindaner ---->  macht das selbe wie .count()
+
+
 
     }
 

@@ -14,6 +14,8 @@
       <!--  <maven.compiler.target>21</maven.compiler.target>  -->
      <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--suppress UnresolvedMavenProperty -->
+        <javafx.module.path>${env.JAVAFX_SDK}/lib</javafx.module.path>
     </properties>
 
 
@@ -50,11 +52,30 @@
             <version>5.10.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>23</version>
+        </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>ballprojekt.BallSpielerei</mainClass>
+                    <options>
+                        <option>--module-path</option>
+                        <option>${javafx.module.path}</option>
+                        <option>--add-modules</option>
+                        <option>javafx.controls</option>
+                    </options>
+                </configuration>
+            </plugin>
             <!-- Jacoco für Testabdeckung -->
             <plugin>
                 <groupId>org.jacoco</groupId>

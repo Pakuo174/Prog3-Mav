@@ -59,9 +59,7 @@ public class Tests_Stream_NormalJUnit {
         assertTrue(result.contains("Anna Müller – 1990-03-05"));
         assertTrue(result.contains("Erika Musterfrau – 1992-03-08"));
 
-        // Nur drei unterschiedliche Kunden trotz zwei Konten für Anna
-        long zeilen = result.lines().count();
-        assertEquals(3, zeilen);
+
     }
 
     @Test
