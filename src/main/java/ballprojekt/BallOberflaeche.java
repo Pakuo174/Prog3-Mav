@@ -88,4 +88,7 @@ public class BallOberflaeche extends VBox {
 	public void ballEintragen(Ball ball) {
 		spielflaeche.getChildren().add(ball);
 	}
+	public Text getUhrzeitText() {
+		return uhrzeit;
+	}
 }

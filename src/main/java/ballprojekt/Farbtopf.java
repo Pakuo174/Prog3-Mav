@@ -21,23 +21,34 @@ public class Farbtopf {
 	 * @param menge entnommene Menge
 	 * @throws ZuWenigFarbeException wenn menge größer als der Füllstand ist
 	 */
-	public void fuellstandVerringern(int menge) throws ZuWenigFarbeException
+	public synchronized void fuellstandVerringern(int menge) throws ZuWenigFarbeException
 	{
-		if(menge > fuellstand)
-			throw new ZuWenigFarbeException();
+		if (menge > fuellstand) {
+			throw new ZuWenigFarbeException(); // ← bewusst frühzeitig werfen
+		}
+
+		while(menge > fuellstand){
+            try {
+                wait();
+
+			} catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
 		if(menge > 0)
 			fuellstand -= menge;
-
 	}
 	
 	/**
 	 * erhöht den Füllstand um die angegebene Menge
 	 * @param menge dazukommende Menge
 	 */
-	public void fuellstandErhoehen(int menge)
+	public synchronized void fuellstandErhoehen(int menge)
 	{
 		if(menge > 0)
 			fuellstand += menge;
+		notifyAll();
 	}
 	
 	/**

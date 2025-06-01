@@ -18,6 +18,9 @@ public class Ball extends Circle implements Runnable{
 	private double x;
 	private double y;
 	private Farbtopf topf;
+
+	private Thread meinThread; // Referenz auf eigenen Thread
+
 	
 	/**
 	 * erstellt einen Ball und lässt ihn loshüpfen
@@ -39,6 +42,21 @@ public class Ball extends Circle implements Runnable{
 		this.topf = topf;
 		this.dx = Math.max(Math.min(dx, 5), 1);
 		this.dy = Math.max(Math.min(dy, 5), 1);
+	}
+
+	public void setThread(Thread t){
+		this.meinThread = t;
+	}
+
+	/**
+	 * unterbricht alle laufenden Threads und setzt das Flag auf interrupted
+	 * Threads werden hier beenden
+	 */
+	public void beenden(){
+
+		if (meinThread != null){
+			meinThread.interrupt();
+		}
 	}
 
 	/**
@@ -73,8 +91,13 @@ public class Ball extends Circle implements Runnable{
 	 * bewegt den Ball einen Schritt weiter -> macht einen kleinen SPrung mit dx und dy
 	 * @throws ZuWenigFarbeException wenn zu wenig Farbe im Topf ist
 	 */
-	private void einHuepfer() throws ZuWenigFarbeException {
-		topf.fuellstandVerringern(BENOETIGTE_MENGE);
+	private void einHuepfer() throws ZuWenigFarbeException, InterruptedException {
+		try {
+			topf.fuellstandVerringern(BENOETIGTE_MENGE);
+		} catch (ZuWenigFarbeException e) {
+			zeichnen(true); // ← grau zeichnen bei Farb-Fehler
+			return;
+		}
 		x += dx;
 		y += dy;
 		if (x - RADIUS <= 0) {
@@ -101,25 +124,24 @@ public class Ball extends Circle implements Runnable{
 	 * zu erhalten, wird nach jedem Schritt eine Pause eingelegt.
 	 * @param anzahlHuepfer Anzahl der Schritte
 	 */
-	public void huepfen(int anzahlHuepfer)
-	{
+	public void huepfen(int anzahlHuepfer) {
 		for (int i = 1; i <= anzahlHuepfer; i++) {
-			while (topf.getFuellstand()< BENOETIGTE_MENGE) {
-					zeichnen(true); // Ball wird grau, wenn Farbtopf leer
-			}
 			try {
-				this.einHuepfer(); //sehr oft aufgerufen, ist aber nur ein kleiner Schritt, nicht bis zum Rand
+				this.einHuepfer();
 			} catch (ZuWenigFarbeException e) {
-				//kann nicht auftreten
-			}
-			try {
-				Thread.sleep(5); //notwendig, damit die Animation nicht, kleine Puase
-								 //zu schnell ist für menschliche Augen
+				zeichnen(true);
 			} catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				break;
 			}
 		}
 		this.unsichtbarMachen();
 	}
+
 
 	private int anzahlHuepfer; // Standardwert – wird später gesetzt
 
@@ -132,6 +154,16 @@ public class Ball extends Circle implements Runnable{
 	 */
 	@Override
 	public void run() {
-		huepfen(anzahlHuepfer);
+		try {
+			while (!Thread.currentThread().isInterrupted()) {
+				huepfen(anzahlHuepfer);
+				Thread.sleep(5);
+			}
+		} catch (InterruptedException e) {
+			// Thread wurde sauber unterbrochen
+		} finally {
+			unsichtbarMachen(); // Ball verschwindet erst NACH dem Beenden
+		}
 	}
+
 }
