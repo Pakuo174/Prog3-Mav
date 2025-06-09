@@ -2,6 +2,7 @@ package bankprojekt.verarbeitung;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,13 +18,17 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Aktie {
 	
-	private static Map<String, Aktie> alleAktien = new HashMap<>();
+	private static Map<String, Aktie> alleAktien = new HashMap<>(); 	// Eine statische Map, die alle erstellten Aktie-Objekte speichert, indexiert nach ihrer Wertepapierkennnummer (WKN).
 	private String wkn; 												// Wertepapierkennnummer
-	private double kurs;
-	private Condition kursHoch;
-	private Condition kursRunter;
-	private Lock aktienlock;
+	private double kurs;												// Der aktuelle Kurs der Aktie. Dieser Wert wird sich dynamisch ändern.
+
+																		// Dies sind Condition-Objekte, die mit dem aktienlock verbunden sind.
+	private Condition kursHoch;											// Threads können hier warten, bis der Kurs steigt.
+	private Condition kursRunter;										// Threads können hier warten, bis der Kurs fällt.
+	private Lock aktienlock;											// Ein Lock-Objekt - Wird verwendet, um den Zugriff auf den kurs zu synchronisieren, wenn dieser verändert wird.
 	private Future<?> kursAenderung;
+
+	private final Random random = new Random();							//
 	
 	/**
 	 * gibt die Aktie mit der gewünschten Wertpapierkennnummer zurück
@@ -52,13 +57,23 @@ public class Aktie {
 		this.kursHoch = this.aktienlock.newCondition();
 		this.kursRunter = this.aktienlock.newCondition();
 		alleAktien.put(wkn, this);
-		
+
+		// ScheduledExecutorService, der die Aufgabe im Hintergrund auf einem eigenen Thread erledigt - jede sekunde
 		Runnable kursAendern = () -> this.kursAendern();
 		ScheduledExecutorService service = Executors.newScheduledThreadPool(0);
+
+		int zufallszeit = random.nextInt(5) + 1;
 		kursAenderung = service.
-				scheduleAtFixedRate(kursAendern, 0, 1, TimeUnit.SECONDS);	
+				scheduleWithFixedDelay(kursAendern, 0, zufallszeit, TimeUnit.SECONDS);
 	}
-	
+
+	/**
+	 * verändert den aktuellen AKtienIndex bzw. simuliert es eher mit einer Zufallszahl wischen -3 und 3
+	 * Race Condition verhindern - Zugriff auf den kurs wird gesperrt
+	 *
+	 * Zufallszahl der Aktie geändert
+	 * abhängig von negativen oder postiven Veränderung wird kursHoch oder kursRUnter Conditon signalisiert
+	 */
 	private void kursAendern()
 	{
 		double veraenderung = Math.random()*6-3;
@@ -111,6 +126,7 @@ public class Aktie {
 	}
 	
 	/**
+	 * Wenn du aktie.anhalten() aufrufst, wird kursAenderung.cancel(false) ausgeführt. Das ist der Befehl an den ScheduledExecutorService, die weiter Ausführung der kursAendern()-Methode zu stoppen.
 	 * stoppt die Kursänderung
 	 */
 	public void anhalten() {

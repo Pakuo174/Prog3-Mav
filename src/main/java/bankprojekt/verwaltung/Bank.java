@@ -52,6 +52,15 @@ public class Bank {
         konten.put(neueNummer, konto);
         return neueNummer;
     }
+    public long AktienKontoErstellen(Kunde inhaber){
+        if (inhaber == null) {
+            throw new IllegalArgumentException("Inhaber darf nicht null sein");
+        }
+        long neueNummer = ++letzteKontonummer;
+        Aktienkonto konto = new Aktienkonto(inhaber,neueNummer);
+        konten.put(neueNummer,konto);
+        return neueNummer;
+    }
 
     /**
      * Erstellt ein Sparbuch für den angegebenen Kunden.

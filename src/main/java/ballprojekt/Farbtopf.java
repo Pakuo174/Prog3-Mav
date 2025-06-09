@@ -15,31 +15,37 @@ public class Farbtopf {
 	public int getFuellstand() {
 		return fuellstand;
 	}
-	
+
 	/**
-	 * verringert den Füllstand um die angegebene Menge
+	 * verringert den Füllstand um die angegebene Menge.
+	 * Wenn nicht genug Farbe vorhanden ist, wartet der Thread, bis der Füllstand ausreicht.
 	 * @param menge entnommene Menge
-	 * @throws ZuWenigFarbeException wenn menge größer als der Füllstand ist
+	 * @throws InterruptedException wenn der wartende Thread unterbrochen wird
 	 */
-	public synchronized void fuellstandVerringern(int menge) throws ZuWenigFarbeException
-	{
-		if (menge > fuellstand) {
-			throw new ZuWenigFarbeException(); // ← bewusst frühzeitig werfen
+	public synchronized void fuellstandVerringern(int menge) throws InterruptedException {
+		if (menge <= 0) { // Eine Menge von 0 oder weniger sollte nicht verringert werden
+			return;
 		}
 
-		while(menge > fuellstand){
-            try {
-                wait();
-
+		// Warten, solange nicht genug Farbe im Topf ist
+		// Die Schleife ist wichtig: Man könnte geweckt werden, aber immer noch nicht genug Farbe haben (Spurious Wakeup)
+		while (menge > fuellstand) {
+			// System.out.println("Farbtopf " + farbe + ": Nicht genug Farbe (" + fuellstand + "l), warte auf " + menge + "l.");
+			try {
+				wait(); // Thread gibt den Monitor frei und geht in den Wartezustand
 			} catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+				// Wenn der Thread während des Wartens unterbrochen wird,
+				// werfen wir die Exception weiter. Der Aufrufer (Ball) muss damit umgehen.
+				throw e; // Wichtig: Exception weiterwerfen
+			}
+		}
 
-        }
-		if(menge > 0)
-			fuellstand -= menge;
+		// Wenn die Schleife verlassen wird, ist genug Farbe vorhanden
+		fuellstand -= menge;
+
 	}
-	
+
+
 	/**
 	 * erhöht den Füllstand um die angegebene Menge
 	 * @param menge dazukommende Menge

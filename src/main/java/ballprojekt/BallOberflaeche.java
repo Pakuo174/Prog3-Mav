@@ -12,15 +12,23 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import javafx.application.Platform;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Eine Oberfläche, in der viele bunte Bälle hüpfen
  *
  */
 public class BallOberflaeche extends VBox {
-	private Text uhrzeit;
+	private Text uhrzeitTextfeld;
 	private Pane spielflaeche;
-	
+
+	// Attribute für die Uhrzeit
+	private Thread uhrzeitUpdateThread;
+	private volatile boolean weiterLaufen = true;
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 	/**
 	 * erstellt die Oberfläche
 	 * @param controller Objekt, in dem die Ereignisse verarbeitet werden
@@ -31,9 +39,9 @@ public class BallOberflaeche extends VBox {
 		HBox oben = new HBox(5);
 		oben.setAlignment(Pos.CENTER);
 		Label beschriftung = new Label("Uhrzeit: ");
-		uhrzeit = new Text("00:00:00");
+		uhrzeitTextfeld = new Text("00:00:00");
 		oben.getChildren().add(beschriftung);
-		oben.getChildren().add(uhrzeit);
+		oben.getChildren().add(uhrzeitTextfeld);
 		this.getChildren().add(oben);
 		
 		spielflaeche = new Pane();
@@ -62,8 +70,56 @@ public class BallOberflaeche extends VBox {
 		leeren.setOnAction(e -> controller.alleBeenden());
 		unten.getChildren().add(leeren);
 		this.getChildren().add(unten);
+
+		startUhrzeitAnzeige();
 	}
-	
+	// mit Lambda den Uhrzeit Thread staren
+	/*private void startUhrzeitAnzeige() {
+		// Hier wird der Thread erzeugt und seine run-Methode als Lambda definiert
+		uhrzeitUpdateThread = new Thread(() -> {
+			while (!Thread.currentThread().isInterrupted()) {
+				String aktuelleZeit = LocalTime.now().format(FORMATTER); // Uhrzeit direkt hier abrufen
+				Platform.runLater(() -> {
+					uhrzeitTextfeld.setText(aktuelleZeit);
+				});
+				try {
+					Thread.sleep(1000); // Jede Sekunde aktualisieren
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					break;
+				}
+			}
+			System.out.println("Uhrzeit-Thread beendet.");
+		});
+		uhrzeitUpdateThread.setDaemon(true);
+		uhrzeitUpdateThread.start(); // Hier wird der Thread gestartet
+	}
+	*/
+	// ohne Lambda den UhrzeitThread starten
+	private void startUhrzeitAnzeige()
+	{
+		uhrzeitUpdateThread = new Thread(new Runnable() { // Anonyme innere Klasse wird erzeugt
+			@Override
+			public void run() {
+				while (!Thread.currentThread().isInterrupted()){
+					String aktuelleZeit = LocalTime.now().format(FORMATTER);
+					Platform.runLater(() -> uhrzeitTextfeld.setText(aktuelleZeit));
+
+                try {
+				Thread.sleep(60_000);
+			} catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+				break;
+            }
+            }
+				System.out.println("Uhrzeit-Thread beendet"); // Ausgabe nachdem die while Schleife nicht mehr läuft
+		}
+	});
+		uhrzeitUpdateThread.setDaemon(true);
+		uhrzeitUpdateThread.start();
+	}
+
+
 	/**
 	 * Breite der Hüpffläche
 	 * @return Breite der Hüpffläche
@@ -71,11 +127,12 @@ public class BallOberflaeche extends VBox {
 	public double getVerfuegbareBreite() {
 		return spielflaeche.getWidth();
 	}
-	
+
 	/**
 	 * Höhe der Hüpffläche
 	 * @return Höhe der Hüpffläche
 	 */
+
 	public double getVerfuegbareHoehe()
 	{
 		return spielflaeche.getHeight();
@@ -89,6 +146,7 @@ public class BallOberflaeche extends VBox {
 		spielflaeche.getChildren().add(ball);
 	}
 	public Text getUhrzeitText() {
-		return uhrzeit;
+		return uhrzeitTextfeld;
 	}
+
 }
