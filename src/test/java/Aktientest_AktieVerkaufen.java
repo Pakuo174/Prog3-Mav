@@ -1,4 +1,3 @@
-package bankprojekt.tests;
 
 import bankprojekt.geld.Waehrung;
 import bankprojekt.verarbeitung.Aktie;
