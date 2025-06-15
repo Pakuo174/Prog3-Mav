@@ -1,10 +1,12 @@
 package bankprojekt.verarbeitung;
 
+import java.io.Serializable;
+
 /**
  * ein Bank-Konto, das Absender und Ziel von Überweisungen
  * sein kann.
  */
-public abstract class UeberweisungsfaehigesKonto extends Konto {
+public abstract class UeberweisungsfaehigesKonto extends Konto implements Serializable {
 
 
 	private long bankleitzahl;

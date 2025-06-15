@@ -1,5 +1,6 @@
 package bankprojekt.verarbeitung;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -10,7 +11,7 @@ import java.util.Locale;
  * Kunde einer Bank
  * @author Dorothea Hubrich
  */
-public class Kunde implements Comparable<Kunde>{
+public class Kunde implements Comparable<Kunde>, Serializable {
 
 	/**
 	 * Ein Musterkunde
@@ -72,11 +73,11 @@ public class Kunde implements Comparable<Kunde>{
 		this.adresse = adresse;
 		this.geburtstag = gebdat;
 		
-		Runtime umgebung = Runtime.getRuntime();
+		/*Runtime umgebung = Runtime.getRuntime();
 		Runnable r = new Zerstoerer();
 		Thread t = new Thread(r);
 		umgebung.addShutdownHook(t);
-		
+		*/
 	}
 	
 	/**

@@ -1,5 +1,6 @@
 package bankprojekt.verarbeitung;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
@@ -10,7 +11,7 @@ import java.time.LocalDate;
  * Monat bestimmt) kann ein Kalender-Objekt angegeben werden. 
  * @author Doro
  *
- */public class Sparbuch extends Konto {
+ */public class Sparbuch extends Konto implements Serializable {
 	/**
 	 * Zinssatz, mit dem das Sparbuch verzinst wird. 0,03 entspricht 3%
 	 */

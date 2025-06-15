@@ -1,9 +1,6 @@
+package bankprojekt.verarbeitung;
 
 import bankprojekt.geld.Waehrung;
-import bankprojekt.verarbeitung.Aktie;
-import bankprojekt.verarbeitung.Aktienkonto;
-import bankprojekt.verarbeitung.Geldbetrag;
-import bankprojekt.verarbeitung.Kunde;
 import bankprojekt.verwaltung.Bank;
 
 import java.time.LocalDate;
@@ -16,7 +13,7 @@ import static bankprojekt.verarbeitung.Aktienkonto.shutdownExecutor;
 
 public class Aktientest_AktieVerkaufen {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws GesperrtException {
 
         Bank b1 = new Bank(1234567);
         Kunde k1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
@@ -26,8 +23,8 @@ public class Aktientest_AktieVerkaufen {
         System.out.println("--- Aktien-Testprogramm gestartet ---");
 
         // Aktien anlegen. Sie beginnen sofort, ihren Kurs zu ändern.
-        Aktie apple = new Aktie("APPLE", 120.50); // Startkurs für Apple
-        Aktie tesla = new Aktie("TESLA", 89.60); // Tesla-Aktie
+        Aktie apple = new Aktie("APPLE", new Geldbetrag(120)); // Startkurs für Apple
+        Aktie tesla = new Aktie("TESLA", new Geldbetrag(89)); // Tesla-Aktie
 
         System.out.println("Anfängliche Aktienkurse:");
         System.out.println("APPLE: " + String.format("%.2f", apple.getKurs()));

@@ -2,6 +2,8 @@ package bankprojekt.verarbeitung;
 
 import bankprojekt.verwaltung.Bank;
 
+import java.io.Serializable;
+
 /**
  * Ein Girokonto, d.h. ein Konto mit einem Dispo und der Fähigkeit,
  * Überweisungen zu senden und zu empfangen.
@@ -10,7 +12,7 @@ import bankprojekt.verwaltung.Bank;
  * @author Doro
  *
  */
-public class Girokonto extends UeberweisungsfaehigesKonto{
+public class Girokonto extends UeberweisungsfaehigesKonto implements Serializable {
 	/**
 	 * Wert, bis zu dem das Konto überzogen werden darf
 	 */

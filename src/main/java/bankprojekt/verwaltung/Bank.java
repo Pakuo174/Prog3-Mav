@@ -2,11 +2,12 @@ package bankprojekt.verwaltung;
 
 import bankprojekt.verarbeitung.*;
 
+import java.io.*;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Bank {
+public class Bank implements Serializable{
 
 
     private long bankleitzahl;
@@ -311,10 +312,40 @@ public class Bank {
                 .count();
                 // .map(kunde ->1)             // aus jeden Kudne wird eine 1
                 // .reduce (0,(a,b)) -> a+b;  // addere dieses einsen miteindaner ---->  macht das selbe wie .count()
+    }
 
+    // Sie speichert this in den angegebenen ziel-Strom mit allen in der Bank gespeicherten
+    //Informationen. Geht dabei etwas schief, wird eine IOException geworfen.
+    public void speichern(OutputStream ziel) throws  IOException{
 
+        try (ObjectOutputStream oos = new ObjectOutputStream(ziel)) {
+            oos.writeObject(this);
+        }
 
     }
+    //Sie liest aus der angegebenen Quelle ein Bank-Objekt ein. geht dabei etwas schief,
+    //soll eine leere Bank zurückgegeben werden.
+    public static Bank einlesen(InputStream quelle){
+        try (ObjectInputStream ois = new ObjectInputStream(quelle)) {
+            // Versuche, das Objekt zu lesen und zu casten
+            Object obj = ois.readObject();
+            if (obj instanceof Bank) {
+                return (Bank) obj;
+            } else {
+                // Falls das gelesene Objekt keine Bank ist (sollte nicht passieren, wenn nur Bank-Objekte gespeichert werden)
+                System.err.println("Das gelesene Objekt ist keine Bank-Instanz.");
+                return new Bank(0); // Oder eine andere Standard-Bankleitzahl für eine leere Bank
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            // Fange IO-Fehler (z.B. Datei nicht gefunden, Lesefehler)
+            // und ClassNotFoundException (wenn die Klasse des Objekts nicht gefunden wird)
+            System.err.println("Fehler beim Einlesen der Bankdaten: " + e.getMessage());
+            // Stacktrace nur für Debugging ausgeben, im Produktivsystem oft unerwünscht
+            // e.printStackTrace();
+            return new Bank(0); // Gib eine neue, leere Bank zurück, wie in der Anforderung
+        }
+    }
+
 
 
 

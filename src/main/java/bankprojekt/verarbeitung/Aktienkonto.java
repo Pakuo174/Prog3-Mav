@@ -2,13 +2,14 @@ package bankprojekt.verarbeitung;
 
 import bankprojekt.geld.Waehrung;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
-public class Aktienkonto extends Konto {
+public class Aktienkonto extends Konto implements Serializable {
 
     /**
      * Speichert das Aktiendepot: für jede Aktie die zugehörige Stückzahl.
@@ -19,7 +20,7 @@ public class Aktienkonto extends Konto {
 
     //einen ExecutorService, um die Kaufaufträge asynchron auszuführen.
     // Ein CachedThreadPool ist gut für viele kurzlebige, unabhängige Aufgaben.
-    private static final ExecutorService kaufauftragExecutor = Executors.newCachedThreadPool();
+    private static final ExecutorService KaufauftragExecutor = Executors.newCachedThreadPool();
 
 
     /**
@@ -39,12 +40,35 @@ public class Aktienkonto extends Konto {
 
     /**
      * Fügt eine Anzahl von Aktien zum Depot hinzu.
+     * synchronied stellt sicher das nur der aktuell ausgeführte Tread während der Ausführung der Methode auf das aktiendepot zugreifen kann
      * @param aktie Die Aktie.
      * @param anzahl Die Anzahl der hinzuzufügenden Stücke.
      */
-    public void addAktienToDepot(Aktie aktie, int anzahl) {
-        aktiendepot.merge(aktie, anzahl, Integer::sum);
-    }
+    public void addAktienToDepot(Aktie aktie, int anzahl) throws GesperrtException {
+        if (aktie == null || anzahl <= 0) {
+            throw new IllegalArgumentException("Aktie darf nicht null sein und Anzahl muss positiv sein.");
+        }
+
+        synchronized (this) {
+            Geldbetrag aktuellerKursDerAktie = aktie.getKurs(); // Kurs als Geldbetrag holen
+            // Den Gesamtpreis berechnen: aktuellerKurs * anzahl
+            Geldbetrag gesamtpreis = aktuellerKursDerAktie.mal(anzahl);
+
+            // Umrechnung des Gesamtpreises in die Kontowährung, falls unterschiedlich
+            Geldbetrag preisInKontowaehrung = gesamtpreis.umrechnen(getKontostand().getWaehrung());
+
+            // Überprüfen, ob genügend Geld auf dem Konto ist
+            if (this.getKontostand().getBetrag() < preisInKontowaehrung.getBetrag()) {
+                throw new IllegalArgumentException("Geld auf Konto reicht nicht aus!");
+            }
+
+            // Geld vom Konto abziehen
+            // Die Methode "abheben" ist bereits in der Superklasse Konto synchronisiert und kümmert sich um die Abhebung.
+            this.abheben(preisInKontowaehrung); // Das Geld wird tatsächlich abgezogen
+
+            // Aktien zum Depot hinzufügen (thread-safe durch äußeren synchronized-Block)
+            aktiendepot.merge(aktie, anzahl, Integer::sum);
+        }}
 
     /**
      * Entfernt eine Anzahl von Aktien aus dem Depot.
@@ -54,6 +78,7 @@ public class Aktienkonto extends Konto {
      * @return Die tatsächlich entfernte Stückzahl.
      */
     private int removeAktienFromDepot(Aktie aktie, int anzahl) {
+        synchronized (this){
         if (!aktiendepot.containsKey(aktie)) {
             return 0; // Aktie nicht im Depot
         }
@@ -65,76 +90,94 @@ public class Aktienkonto extends Konto {
             aktiendepot.put(aktie, aktuellerBestand - anzahl); // Bestand reduzieren
             return anzahl;
         }
-    }
+    }}
 
 
 
     public Future<Geldbetrag> kaufauftrag(String wkn, int anzahl, Geldbetrag hoechstpreis){
         Aktie aktie = Aktie.getAktie(wkn);
 
-        if (anzahl <= 0 || hoechstpreis == null || hoechstpreis.isNegativ()) {
-            return kaufauftragExecutor.submit(() -> { throw new IllegalArgumentException("Ungültige Parameter für Kaufauftrag."); });
+        if (anzahl <= 0 || hoechstpreis == null || hoechstpreis.isNegativ() || aktie == null) {
+            // Ein Future zurückgeben, das sofort eine IllegalArgumentException wirft, wenn get() aufgerufen wird.
+            return KaufauftragExecutor.submit(() -> { throw new IllegalArgumentException("Ungültige Parameter für Kaufauftrag oder Aktie nicht gefunden."); });
         }
 
-        //warten
         // Die eigentliche Kauflogik als Callable, die im ExecutorService ausgeführt wird
         Callable<Geldbetrag> kaufTask = () -> {
             Lock aktienLock = aktie.getAktienlock();
             Condition kursRunter = aktie.getKursRunter();
-            Geldbetrag bezahlterPreis;
+            Geldbetrag bezahlterPreis = null; // Auf null initialisieren
 
             aktienLock.lock(); // Lock für die Aktie erwerben
             try {
                 // Schleife, um auf den passenden Kurs zu warten.
-                while (aktie.getKurs() > hoechstpreis.getBetrag() && !Thread.currentThread().isInterrupted()) {
-                    System.out.println(Thread.currentThread().getName() + " --> Warte auf Kursfall bei " + aktie.getWkn() + ". Aktuell: " + String.format("%.2f", aktie.getKurs()) + ", Max: " + String.format("%.2f", hoechstpreis.getBetrag()));
-                    kursRunter.await(10, TimeUnit.SECONDS); // Warte max. 10 Sekunden, bevor erneut geprüft wird
+                // Vergleich erfolgt jetzt mit compareTo für Geldbetrag-Objekte.
+                while (aktie.getKurs().compareTo(hoechstpreis) > 0) { // Bedingung: Kurs ist ZU HOCH
+                    // Keine System.out.println-Aufrufe hier, um die Trennung der Belange zu wahren.
+                    try {
+                        kursRunter.await(); // Warte unbegrenzt, bis ein Signal kommt oder unterbrochen wird
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt(); // Interrupt-Flag wieder setzen
+                        return null; // Auftrag abgebrochen (wird vom aufrufenden Code gehandhabt)
+                    }
                 }
+                // An diesem Punkt ist der Kurs passend, oder der Thread wurde unterbrochen.
                 if (Thread.currentThread().isInterrupted()) {
-                    System.out.println("Kaufauftrag für " + aktie.getWkn() + " unterbrochen.");
                     return null; // Auftrag abgebrochen
                 }
 
-
                 // Kurs ist unter oder gleich dem Höchstpreis. Jetzt kaufen!
-                double aktuellerKurs = aktie.getKurs();
-                double gesamtpreisDouble = aktuellerKurs * anzahl;
-                Geldbetrag kaufbetrag = new Geldbetrag(gesamtpreisDouble, getKontostand().getWaehrung());
+                Geldbetrag aktuellerKurs = aktie.getKurs();
+                Geldbetrag gesamtpreisBerechnet = aktuellerKurs.mal(anzahl);
+                // Der Kaufbetrag muss für den Vergleich und die Abhebung in der Währung des Kontos vorliegen
+                Geldbetrag kaufbetragInKontowaehrung = gesamtpreisBerechnet.umrechnen(getKontostand().getWaehrung());
 
-                // Lock für das KONTO erwerben, um den Kontostand zu ändern und Depot zu aktualisieren
+                // Lock für das KONTO erwerben, um den Kontostand zu ändern und das Depot zu aktualisieren
                 synchronized (this) { // Synchronisiere auf dem Aktienkonto-Objekt
-                    if (getKontostand().compareTo(kaufbetrag) >= 0) {
+                    // Prüfen, ob das Konto gesperrt ist
+                    if (this.isGesperrt()) {
+                        // Werfe eine Ausnahme statt zu drucken; sie wird vom Future aufgefangen
+                        throw new GesperrtException(this.getKontonummer());
+                    }
+                    if (getKontostand().compareTo(kaufbetragInKontowaehrung) >= 0) {
                         // Geld abziehen
-                        abheben(kaufbetrag);
-                        // Aktien zum Depot hinzufügen
-                        addAktienToDepot(aktie, anzahl);
-                        bezahlterPreis = kaufbetrag;
-                        System.out.printf("Aktie %s gekauft: %d Stück zu %.2f (Gesamt: %.2f). Neuer Kontostand: %s.\n",
-                                aktie.getWkn(), anzahl, aktuellerKurs, gesamtpreisDouble, getKontostand().toString());
+                        this.abheben(kaufbetragInKontowaehrung);
+                        // Aktien zum Depot hinzufügen (Methode ist intern synchronisiert)
+                        this.aktiendepot.merge(aktie, anzahl, Integer::sum); // Merge direkt verwenden
+                        bezahlterPreis = gesamtpreisBerechnet; // Den Preis in der Aktienwährung oder Kontowährung zurückgeben
                     } else {
-                        System.out.println("Kaufauftrag für " + aktie.getWkn() + " fehlgeschlagen: Unzureichender Kontostand. Aktueller Kurs: " + String.format("%.2f", aktuellerKurs) + ", Benötigt: " + kaufbetrag + ", Vorhanden: " + getKontostand());
+                        // Unzureichende Mittel, null zurückgeben, um Misserfolg anzuzeigen
                         return null;
                     }
                 }
-            } catch (InterruptedException e) {
-                System.out.println("Kaufauftrag für " + aktie.getWkn() + " unterbrochen beim Warten.");
-                Thread.currentThread().interrupt(); // Interrupt-Flag wieder setzen
-                return null;
+            } catch (GesperrtException e) {
+                // Die geprüfte GesperrtException in eine ungeprüfte CompletionException für Callable verpacken
+                throw new CompletionException(e);
             } finally {
-                // Das Lock der Aktie MUSS freigegeben werden, egal was passiert ist
-                aktienLock.unlock();
+                aktienLock.unlock(); // Das Lock der Aktie MUSS freigegeben werden, egal was passiert
             }
             return bezahlterPreis;
         };
         // Den Kauf-Task an den ExecutorService übergeben und das Future zurückgeben
-        return kaufauftragExecutor.submit(kaufTask);
+        return KaufauftragExecutor.submit(kaufTask);
     }
 
 
+
+    /**
+     * Leitet einen asynchronen Verkaufsauftrag für eine bestimmte Aktie ein.
+     * Der Auftrag wartet, bis der Kurs der Aktie den Mindestpreis erreicht oder überschreitet.
+     *
+     * @param wkn Die Wertpapierkennnummer der Aktie.
+     * @param minimalpreis Der Mindestpreis, zu dem die Aktie verkauft werden soll.
+     * @return Ein {@link Future}-Objekt, das das Ergebnis des Verkaufs darstellt.
+     * Es enthält den gesamten erzielten {@link Geldbetrag} bei Erfolg, oder einen {@link Geldbetrag} von 0/wirft eine Ausnahme.
+     * @throws IllegalArgumentException Wenn die Parameter ungültig sind.
+     */
     public Future<Geldbetrag> verkaufauftrag(String wkn, Geldbetrag minimalpreis){
         Aktie aktie = Aktie.getAktie(wkn);
-        final int[] stueckzahlWrapper = {0}; // Wrapper für Integer, da Lambda nur final/effectively final Variablen nutzt
-
+        // Wrapper für Integer, da Lambda-Ausdrücke nur final/effectively final Variablen nutzen
+        final int[] stueckzahlWrapper = {0};
 
         synchronized (this) {
             // Finde das Aktie-Objekt im Depot über die WKN
@@ -148,19 +191,18 @@ public class Aktienkonto extends Konto {
             }
 
             if (aktieImDepot == null || stueckzahlWrapper[0] == 0) {
-                System.out.println("Verkaufsauftrag für WKN " + wkn + " fehlgeschlagen: Aktie nicht im Depot oder Bestand 0.");
-                // Wenn Aktie nicht im Depot oder Bestand 0, sofort Future mit 0 zurückgeben
-                return kaufauftragExecutor.submit(() -> new Geldbetrag(0, Waehrung.EUR));
+                // Wenn Aktie nicht im Depot oder Bestand 0, sofort ein Future mit 0 zurückgeben
+                return KaufauftragExecutor.submit(() -> new Geldbetrag(0, Waehrung.EUR)); // Annahme EUR für Null-Rückgabe
             }
-            aktie = aktieImDepot; // Stelle sicher, dass wir die Depot-Aktien-Instanz verwenden
+            aktie = aktieImDepot; // Sicherstellen, dass wir die Depot-Aktien-Instanz verwenden
         }
 
-        if (aktie == null) { // Fall, dass Aktie zwar im Depot aber Aktie.getAktie(wkn) null liefert.
-            System.out.println("Verkaufsauftrag für WKN " + wkn + " fehlgeschlagen: Aktie nicht gefunden (obwohl im Depot).");
-            return kaufauftragExecutor.submit(() -> new Geldbetrag(0, Waehrung.EUR));
+        // Erneute Prüfung nach potenzieller Null von Aktie.getAktie(wkn), falls nicht bereits oben behandelt
+        if (aktie == null) {
+            return KaufauftragExecutor.submit(() -> new Geldbetrag(0, Waehrung.EUR));
         }
         if (minimalpreis == null || minimalpreis.isNegativ()) {
-            return kaufauftragExecutor.submit(() -> { throw new IllegalArgumentException("Ungültiger Minimalpreis für Verkaufsauftrag."); });
+            return KaufauftragExecutor.submit(() -> { throw new IllegalArgumentException("Ungültiger Minimalpreis für Verkaufsauftrag."); });
         }
 
 
@@ -171,51 +213,53 @@ public class Aktienkonto extends Konto {
         Callable<Geldbetrag> verkaufTask = () -> {
             Lock aktienLock = finalAktie.getAktienlock();
             Condition kursHoch = finalAktie.getKursHoch(); // Brauchen Condition für Kursanstieg
-            Geldbetrag gesamterloes ;
+            Geldbetrag gesamterloes = new Geldbetrag(0, getKontostand().getWaehrung()); // Auf Null initialisieren
 
             aktienLock.lock(); // Lock für die Aktie erwerben
             try {
                 // Schleife, um auf den passenden Kurs zu warten
-                while (finalAktie.getKurs() < minimalpreis.getBetrag() && !Thread.currentThread().isInterrupted()) {
-                    System.out.println(Thread.currentThread().getName() + " --> Warte auf Kursanstieg bei " + finalAktie.getWkn() + ". Aktuell: " + String.format("%.2f", finalAktie.getKurs()) + ", Min: " + String.format("%.2f", minimalpreis.getBetrag()));
-                    kursHoch.await(10, TimeUnit.SECONDS); // Warte max. 10 Sekunden
+                while (finalAktie.getKurs().compareTo(minimalpreis) < 0) { // Bedingung: Kurs ist ZU NIEDRIG
+                    // Keine Konsolenausgabe hier
+                    try {
+                        kursHoch.await(); // Warte unbegrenzt
+                    } catch (InterruptedException e) {
+                        return new Geldbetrag(0, getKontostand().getWaehrung()); // Erlös 0 bei Abbruch
+                    }
                 }
+                // An diesem Punkt ist der Kurs passend, oder der Thread wurde unterbrochen.
                 if (Thread.currentThread().isInterrupted()) {
-                    System.out.println("Verkaufsauftrag für " + finalAktie.getWkn() + " unterbrochen.");
-                    return new Geldbetrag(0, getKontostand().getWaehrung()); // Auftrag abgebrochen, Erlös 0
+                    return new Geldbetrag(0, getKontostand().getWaehrung());
                 }
 
-                // Kurs ist über oder gleich dem Minimalpreis. Jetzt verkaufen!
-                double aktuellerVerkaufskurs = finalAktie.getKurs();
-                double gesamtpreisDouble = aktuellerVerkaufskurs * anzahlZuVerkaufen;
-                gesamterloes = new Geldbetrag(gesamtpreisDouble, getKontostand().getWaehrung());
+                // Kurs ist über oder gleich dem Mindestpreis. Jetzt verkaufen!
+                Geldbetrag aktuellerVerkaufskurs = finalAktie.getKurs();
+                Geldbetrag gesamtpreisBerechnet = aktuellerVerkaufskurs.mal(anzahlZuVerkaufen);
+                gesamterloes = gesamtpreisBerechnet.umrechnen(getKontostand().getWaehrung());
 
-                // Lock für das KONTO erwerben, um den Kontostand zu ändern und Depot zu aktualisieren
+
+                // Lock für das KONTO erwerben, um den Kontostand zu ändern und das Depot zu aktualisieren
                 synchronized (this) { // Synchronisiere auf dem Aktienkonto-Objekt
                     if (isGesperrt()) {
-                        System.out.println(Thread.currentThread().getName() + ": Verkaufsauftrag für " + finalAktie.getWkn() + " fehlgeschlagen: Konto gesperrt.");
-                        return new Geldbetrag(0, getKontostand().getWaehrung());
+                        // Werfe eine Ausnahme statt zu drucken
+                        throw new GesperrtException(this.getKontonummer());
                     }
                     // Aktien aus dem Depot entfernen
-                    int removedAnzahl = removeAktienFromDepot(finalAktie, anzahlZuVerkaufen); // Sollte anzahlZuVerkaufen sein
+                    int removedAnzahl = removeAktienFromDepot(finalAktie, anzahlZuVerkaufen); // Sollte die volle Stückzahl sein
                     if (removedAnzahl > 0) {
                         // Geld einzahlen
                         einzahlen(gesamterloes); // Nutze deine einzahlen-Methode
-                        System.out.printf("Aktie %s verkauft: %d Stück zu %.2f (Gesamt: %.2f). Neuer Kontostand: %s.\n",
-                                finalAktie.getWkn(), removedAnzahl, aktuellerVerkaufskurs, gesamtpreisDouble, getKontostand().toString());
                     } else {
-                        // Dies sollte nicht passieren, wenn die Prüfung am Anfang korrekt war
-                        System.out.println("Verkaufsauftrag für " + finalAktie.getWkn() + " fehlgeschlagen: Aktie nicht mehr im Depot oder Stückzahl 0.");
-                        return new Geldbetrag(0, getKontostand().getWaehrung());
+                        // Dies sollte nicht passieren, wenn die anfängliche Prüfung korrekt war,
+                        // aber es behandelt Randfälle.
+                        return new Geldbetrag(0, getKontostand().getWaehrung()); // Keine Aktien zu entfernen, kein Erlös
                     }
                 }
-            } catch (InterruptedException e) {
-                System.out.println("Verkaufsauftrag für " + finalAktie.getWkn() + " unterbrochen beim Warten.");
-                Thread.currentThread().interrupt();
-                return new Geldbetrag(0, getKontostand().getWaehrung()); // Erlös 0 bei Abbruch
+            } catch (GesperrtException e) {
+                // Die geprüfte GesperrtException in eine ungeprüfte CompletionException für Callable verpacken
+                throw new CompletionException(e);
             } catch (Exception e) {
-                System.err.println("Verkaufsauftrag für " + finalAktie.getWkn() + " fehlgeschlagen mit Exception: " + e.getMessage());
-                return new Geldbetrag(0, getKontostand().getWaehrung());
+                // Breite Ausnahmen vom Task abfangen und verpacken
+                throw new CompletionException("Verkaufsauftrag für " + finalAktie.getWkn() + " fehlgeschlagen mit Ausnahme: " + e.getMessage(), e);
             } finally {
                 aktienLock.unlock(); // Das Lock der Aktie MUSS freigegeben werden
             }
@@ -223,7 +267,7 @@ public class Aktienkonto extends Konto {
         };
 
         // Den Verkauf-Task an den ExecutorService übergeben und das Future zurückgeben
-        return kaufauftragExecutor.submit(verkaufTask);
+        return KaufauftragExecutor.submit(verkaufTask);
     }
 
 
@@ -254,13 +298,13 @@ public class Aktienkonto extends Konto {
 
 
     public static void shutdownExecutor() {
-        kaufauftragExecutor.shutdown();
+        KaufauftragExecutor.shutdown();
         try {
-            if (!kaufauftragExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
-                kaufauftragExecutor.shutdownNow(); // Falls nicht alle Aufgaben beendet wurden
+            if (!KaufauftragExecutor.awaitTermination(60, TimeUnit.SECONDS)) {
+                KaufauftragExecutor.shutdownNow(); // Falls nicht alle Aufgaben beendet wurden
             }
         } catch (InterruptedException e) {
-            kaufauftragExecutor.shutdownNow();
+            KaufauftragExecutor.shutdownNow();
             Thread.currentThread().interrupt();
         }
 
