@@ -36,6 +36,53 @@ public class Bank implements Serializable{
     }
 
     /**
+     * -- Abstract Methode --
+     * * Erzeugt ein neues Konto mithilfe einer Kontofabrik und speichert es.
+     *  Diese Methode ersetzt girokontoErstellen(), sparbuchErstellen() und mockEinfuegen().
+     *
+     * @param fabrik Die Kontofabrik, die das konkrete Konto-Objekt erzeugt.
+     * @param kontoTyp Der Typ des zu erstellenden Kontos (z.B. "Sparbuch", "Girokonto", "Aktienkonto").
+     * @param inhaber inhaber Der Inhaber des Kontos.
+     * @param betrag Betrag des Kontos
+     * @return die neue Kontonummer der erstellen Kontos
+     *  @throws IllegalArgumentException Wenn ein unbekannter Kontotyp angefordert wird
+     *
+     */
+    public long kontoErstellen(Kontofabrik fabrik, String kontoTyp, Kunde inhaber, Geldbetrag betrag){
+        if (inhaber == null) {
+            throw new IllegalArgumentException("Inhaber darf nicht null sein");
+        }
+        long neueNummer = ++letzteKontonummer;
+        Konto neuesKonto = null;
+
+        switch (kontoTyp.toLowerCase()){
+            case "sparbuch":
+                neuesKonto = fabrik.erstelleSparbuch(inhaber,neueNummer);
+                break;
+            case "girokonto":
+                neuesKonto = fabrik.erstelleGirokonto(inhaber,neueNummer,betrag);
+                break;
+            case "aktienkonto":
+                neuesKonto = fabrik.erstelleAktienkonto(inhaber,neueNummer);
+                break;
+            default:
+                throw new IllegalArgumentException("Unbekannter Kontotyp: " + kontoTyp);
+        }
+        
+        konten.put(neueNummer, neuesKonto);
+        return neueNummer;
+    }
+    /**
+     * Gibt ein Konto anhand seiner Nummer zurück.
+     * @param kontonummer Die Nummer des Kontos.
+     * @return Das Konto-Objekt oder null, wenn kein Konto mit dieser Nummer existiert.
+     */
+    public Konto getKonto(long kontonummer) {
+        return konten.get(kontonummer);
+    }
+
+    /*
+    /**
      * erstellt ein Girokonto für den angegebenen Kunden. Dabei soll die Methode eine beliebige neue, noch nicht vergebene Kontonummer erzeugen
      * * Das Konto erhält eine automatisch generierte Kontonummer - beginnend bei 1
      * * Erstellt ein Girokonto mit einem Standard-Dispositionskredit von 500 Euro.
@@ -43,7 +90,7 @@ public class Bank implements Serializable{
      * @param inhaber definiert eine Instanz der Klasse Kunde
      * @return ist die neue Kontonummer
      * @exception IllegalArgumentException wird geworfen wenn Ein Kunde nur mit null Werten übergeben wird
-     */
+
     public long girokontoErstellen(Kunde inhaber) {
         if (inhaber == null) {
             throw new IllegalArgumentException("Inhaber darf nicht null sein");
@@ -63,6 +110,8 @@ public class Bank implements Serializable{
         return neueNummer;
     }
 
+
+    /
     /**
      * Erstellt ein Sparbuch für den angegebenen Kunden.
      * Die Kontonummer wird automatisch generiert, beginnend bei 1. Diese dient gleichzeitig als Schlüssel in der Konten-HashMap.
@@ -72,7 +121,6 @@ public class Bank implements Serializable{
      * @param inhaber Der Kontoinhaber des neuen Sparbuchs.
      * @return Die neu vergebene Kontonummer.
      * @throws IllegalArgumentException wenn der Inhaber ist.
-     */
     public long sparbuchErstellen(Kunde inhaber) {
         if (inhaber == null) {
             throw new IllegalArgumentException("Inhaber darf nicht null sein");
@@ -87,12 +135,14 @@ public class Bank implements Serializable{
      * Methode dient für Mocking-OBjekte
      * @param k ist ein Konto
      * @return Die neu vergebene Kontonummer.
-     */
+
     public long mockEinfuegen(Konto k){
         long neueNummer = ++letzteKontonummer;
         konten.put(neueNummer, k);
         return neueNummer;
     }
+*/
+
 
 
     public String getAlleKonten() {

@@ -113,30 +113,14 @@ public class Girokonto extends UeberweisungsfaehigesKonto implements Serializabl
     }
 
 
-	/**
-	 * Der dispo wird vorher auf die Kontowährung umgerechnet >>> in der Variable "dispoInKontoWährung"
-	 *
-	 * @param betrag abzuhebender Betrag
-	 * @return
-	 */
-	@Override
-	public boolean abheben(Geldbetrag betrag) throws GesperrtException {
-		if (betrag == null || betrag.isNegativ()) {
-			throw new IllegalArgumentException("Betrag ungültig");
-		}
-		if (this.isGesperrt()) {
-			throw new GesperrtException(this.getKontonummer());
-		}
+	public boolean pruefeAbhebungSpezifisch(Geldbetrag betrag){
 
 		Geldbetrag dispoInKontowaehrung = this.dispo.umrechnen(this.getKontostand().getWaehrung());
-		Geldbetrag saldo = this.getKontostand().plus(dispoInKontowaehrung);
-		Geldbetrag betragInKontowaehrung = betrag.umrechnen(this.getKontostand().getWaehrung());
+		Geldbetrag saldoNachAbhebung = this.getKontostand().minus(betrag).plus(dispoInKontowaehrung);
+		// Prüfen, ob der Saldo nach Abhebung unter dem negativen Dispo liegt (d.h. zu weit überzogen wäre)
+		return saldoNachAbhebung.compareTo(Geldbetrag.NULL_EURO) >= 0;
+    }
 
-		if (saldo.minus(betragInKontowaehrung).isNegativ()) {
-			return  false;
-		}
 
-		setKontostand(this.getKontostand().minus(betragInKontowaehrung));
-		return true;
-	}
+
 }

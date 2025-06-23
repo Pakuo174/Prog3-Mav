@@ -141,16 +141,39 @@ public abstract class Konto implements Comparable<Konto>, Serializable
     }
 
     /**
-     * Mit dieser Methode wird der geforderte Betrag vom Konto abgehoben, wenn es nicht gesperrt ist
-     * und die speziellen Abheberegeln des jeweiligen Kontotyps die Abhebung erlauben
-     *
+     * Template-Methode: Versucht, den geforderten Betrag vom Konto abzuheben.
+     * Definiert den allgemeinen Abhebeprozess, bei dem spezifische Prüfungen
+     * den Unterklassen überlassen werden.
      * @param betrag abzuhebender Betrag
-     * @return
-     * @throws GesperrtException        wenn das Konto gesperrt ist
-     * @throws IllegalArgumentException wenn der betrag negativ oder unendlich oder NaN ist
+     * @return true, wenn die Abhebung erfolgreich war, false sonst
+     * @throws GesperrtException wenn das Konto gesperrt ist
+     * @throws IllegalArgumentException wenn der Betrag ungültig ist
      */
-    public abstract boolean abheben(Geldbetrag betrag)
-            throws GesperrtException;
+    public final  boolean abheben(Geldbetrag betrag)
+            throws GesperrtException{
+        if (betrag == null || betrag.isNegativ()) {
+            throw new IllegalArgumentException("Betrag ungültig: " + betrag);
+        }
+        if (this.isGesperrt()) {
+            throw new GesperrtException(this.getKontonummer());
+        }
+
+        // Hook-Methode für kontospezifische Prüfungen
+        if (!pruefeAbhebungSpezifisch(betrag)) {
+            return false; // Spezifische Regeln erlauben keine Abhebung
+        }
+
+        setKontostand(getKontostand().minus(betrag));
+        return true;
+    }
+
+    /**
+     * Hook-Methode: Überprüft die kontospezifischen Regeln für eine Abhebung.
+     * Muss von den konkreten Unterklassen implementiert werden.
+     * @param betrag der abzuhebende Betrag
+     * @return true, wenn die kontospezifischen Regeln die Abhebung erlauben, false sonst.
+     */
+    public abstract boolean pruefeAbhebungSpezifisch(Geldbetrag betrag);
 
     /**
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.

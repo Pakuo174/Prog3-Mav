@@ -1,0 +1,11 @@
+125326
+Zahl mit insgesammt 12 Stellen 000000125326
++125.326
+Hexadezimal : 1E98E
+Nachkommazahl12551.1251
+Nachkommazahl mit Vorzeichen und 4 Dezimalstellen: +12551,1251
+Wissenschaftliche Darstellung: 1,255113e+04
+Nachkommazahl (US-Format, 2 Dezimalstellen): 12551.13
+Aktuelles Datum : 16. Juni 2025 (Mo.)
+Aktuelles Datum (Französisch): 16.06.25 lundi
+Aktuelle Uhrzeit (Englisch AM/PM): 6:12 PM

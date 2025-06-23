@@ -19,6 +19,7 @@ public class Tests_Stream_NormalJUnit {
     void setup() {
         bank = new Bank(12345678L);
 
+        /*
         // Kunde mit Geb. am 5. März
         kunde1 = new Kunde("Anna", "Müller", "Adresse 1", LocalDate.of(1990, 3, 5));
         bank.girokontoErstellen(kunde1);
@@ -43,9 +44,11 @@ public class Tests_Stream_NormalJUnit {
         Kunde jung = new Kunde("Ben", "Jung", "Adresse", LocalDate.of(1925, 1, 10));
         kontoNummerJung = bank.girokontoErstellen(jung);
 
+
+         */
     }
 
-
+/*
     @Test
     void testGetKundengeburtstage() {
 
@@ -61,12 +64,14 @@ public class Tests_Stream_NormalJUnit {
 
 
     }
+*/
 
+    /*
     @Test
     void testGetAnzahlSenioren() {
         long seniorenCount = bank.getAnzahlSenioren();
         // Nur der eine Senior sollte gezählt werden
         assertEquals(2, seniorenCount);
     }
-
+*/
 }

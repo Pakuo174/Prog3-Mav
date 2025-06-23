@@ -19,6 +19,7 @@ public class Bank_StreamIO_main {
         Kunde k1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
         Kunde k2 = new Kunde("Nico", "Froelich", "Rathenow", LocalDate.of(2000, 12, 13));
 
+        /*
 
         bank.AktienKontoErstellen(k1);
         bank.geldEinzahlen(1,new Geldbetrag(500));
@@ -26,7 +27,7 @@ public class Bank_StreamIO_main {
         bank.AktienKontoErstellen(k2);
         bank.geldEinzahlen(2,new Geldbetrag(504240));
 
-
+        */
 
 
         // Dateiname für die Serialisierung

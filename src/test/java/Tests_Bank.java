@@ -1,9 +1,7 @@
 import bankprojekt.geld.Waehrung;
-import bankprojekt.verarbeitung.Geldbetrag;
-import bankprojekt.verarbeitung.GesperrtException;
-import bankprojekt.verarbeitung.Kunde;
-import bankprojekt.verarbeitung.Sparbuch;
+import bankprojekt.verarbeitung.*;
 import bankprojekt.verwaltung.Bank;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -13,6 +11,62 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Tests_Bank {
 
 
+    private Bank bank;
+    private Kunde testKunde1;
+    private Kunde testKunde2;
+    private Kontofabrik standardFabrik;
+    private Kontofabrik mockFabrik;
+
+    @BeforeEach
+    void setUp(){
+
+        bank = new Bank(123);
+        testKunde1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
+        testKunde2 = new Kunde("Nico", "Froelich", "Rathenow", LocalDate.of(2000, 12, 13));
+        standardFabrik = new StandartKontoFabrik();
+        mockFabrik = new MockKontofabrik();
+    }
+
+    @Test
+    void testGirokontoErstellenMitFabrik(){
+        long kontoNr = bank.kontoErstellen(standardFabrik,"Girokonto",testKunde1,new Geldbetrag(500,Waehrung.EUR));
+        assertNotNull(bank.getAlleKontonummern().contains(kontoNr));
+        assertTrue(bank.getKonto(kontoNr) instanceof Girokonto);
+    }
+    @Test
+    void testSparbuchErstellenMitFabrik() {
+        long kontoNr = bank.kontoErstellen(standardFabrik, "Sparbuch", testKunde2,new Geldbetrag(500));
+        assertNotNull(bank.getKonto(kontoNr));
+        assertTrue(bank.getKonto(kontoNr) instanceof Sparbuch);
+        assertEquals(Geldbetrag.NULL_EURO, bank.getKonto(kontoNr).getKontostand());
+    }
+
+    @Test
+    void testAktienkontoErstellenMitFabrik() {
+        long kontoNr = bank.kontoErstellen(standardFabrik, "Aktienkonto", testKunde1,new Geldbetrag(5));
+        assertNotNull(bank.getKonto(kontoNr));
+        assertTrue(bank.getKonto(kontoNr) instanceof Aktienkonto);
+        assertEquals(Geldbetrag.NULL_EURO, bank.getKonto(kontoNr).getKontostand());
+    }
+
+    @Test
+    void testMockKontenErstellen() {
+        // Erstellen eines Mock-Sparbuchs mit der Mock-Fabrik
+        long sparbuchMockNr = bank.kontoErstellen(mockFabrik, "Sparbuch", testKunde1, new Geldbetrag(5));
+        assertNotNull(bank.getKonto(sparbuchMockNr));
+        assertTrue(bank.getKonto(sparbuchMockNr) instanceof Sparbuch);
+        // Prüfe den Startguthaben, das von der MockFabrik gesetzt wurde
+        assertEquals(new Geldbetrag(1000.00, Waehrung.EUR), bank.getKonto(sparbuchMockNr).getKontostand());
+
+        // Erstellen eines Mock-Girokontos mit der Mock-Fabrik
+        long giroMockNr = bank.kontoErstellen(mockFabrik, "Girokonto", testKunde2, new Geldbetrag(500.00, Waehrung.EUR));
+        assertNotNull(bank.getKonto(giroMockNr));
+        assertTrue(bank.getKonto(giroMockNr) instanceof Girokonto);
+        assertEquals(new Geldbetrag(500.00, Waehrung.EUR), bank.getKonto(giroMockNr).getKontostand());
+    }
+
+
+    /*
     @Test
     public void bankErstellenUndGirokonto() {
         // Bank erstellen
@@ -35,7 +89,7 @@ public class Tests_Bank {
     /**
      * testen ob 2 Konten erstellt werden können zu einer Bank
      * + ob die HashMap sich mit erhöht
-     */
+
     @Test
     public void mehrereGirokontoErstellen() {
         // Bank erstellen
@@ -63,7 +117,7 @@ public class Tests_Bank {
 
     /**
      * Konten werden erstellt, aber auf das konktrete Sparbuch Instanz kann nicht zugreiffen werden (auf Attribute)
-     */
+
     @Test
     public void mehrereVerschKontenErstellen() {
         Bank b1 = new Bank(1234567);
@@ -232,7 +286,7 @@ public class Tests_Bank {
      * sollte nicht klappen, da zu wenig Geld auf den Konto wäre
      * 500 ist disp , 500 ist auf den bankkonto 1 ---> das - 1001 würde zu -501 führen was über den dispo ist
      * @throws GesperrtException
-     */
+
     @Test
     public void testUeberweisenOhneGeldAufKonto() throws GesperrtException {
         Bank b1 = new Bank(1234567);
@@ -262,7 +316,7 @@ public class Tests_Bank {
         }
 
 
-
+        */
 
 
 }

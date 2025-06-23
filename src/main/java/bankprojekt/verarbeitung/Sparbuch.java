@@ -99,32 +99,15 @@ import java.time.LocalDate;
     	return ausgabe;
 	}
 
-	@Override
-	public boolean abheben (Geldbetrag betrag) throws GesperrtException{
-		if (betrag == null || betrag.isNegativ()) {
-			throw new IllegalArgumentException("Betrag ungültig");
-		}
-		if(this.isGesperrt())
-		{
-			GesperrtException e = new GesperrtException(this.getKontonummer());
-			throw e;
-		}
+
+	public boolean pruefeAbhebungSpezifisch(Geldbetrag betrag) {
 		LocalDate heute = kalender.getHeutigesDatum();
-		if(heute.getMonth() != zeitpunkt.getMonth() || heute.getYear() != zeitpunkt.getYear())
-		{
+		if(heute.getMonth() != zeitpunkt.getMonth() || heute.getYear() != zeitpunkt.getYear()) {
 			this.bereitsAbgehoben = Geldbetrag.NULL_EURO;
 		}
 		Geldbetrag neu = getKontostand().minus(betrag);
-		if (neu.compareTo(Sparbuch.MINIMUM) >= 0 && 
-				 bereitsAbgehoben.plus(betrag).compareTo(Sparbuch.ABHEBESUMME)<= 0)
-		{
-			setKontostand(neu);
-			bereitsAbgehoben = bereitsAbgehoben.plus(betrag);
-			this.zeitpunkt = heute;
-			return true;
-		}
-		else
-			return false;
+		return neu.compareTo(Sparbuch.MINIMUM) >= 0 &&
+				bereitsAbgehoben.plus(betrag).compareTo(Sparbuch.ABHEBESUMME) <= 0;
 	}
 
 }

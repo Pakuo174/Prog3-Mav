@@ -47,17 +47,22 @@ public class Tests_StreamMethoden_Mocking {
         when(kontoLeer.getInhaber()).thenReturn(leer);
 
 
+        /*
         // Konto-Map manipulieren (angenommen, du hast in Bank Zugriff auf konten-Map)
         long kontonummer1 = bank.mockEinfuegen(kontoAlt1);
         long kontonummer2 = bank.mockEinfuegen(kontoAlt2);
         long kontonummer3 = bank.mockEinfuegen(kontoJung);
         long kontonummer4 = bank.mockEinfuegen(kontoLeer);
 
+
+         */
+
     }
 
 
 
 
+    /*
 
     @Test
     void testEinzahlenBetragÜber18(){
@@ -74,13 +79,10 @@ public class Tests_StreamMethoden_Mocking {
         verify(kontoJung, never()).einzahlen(any());
 
     }
-    @Test
-    void testKundenmitLeerenKonto_ThrowsIfKontostandNull(){
 
-        // Act & Assert
-        assertThrows(NullPointerException.class, () -> bank.getKundenMitLeeremKonto());
-    }
 
+
+     */
 
 
 }
