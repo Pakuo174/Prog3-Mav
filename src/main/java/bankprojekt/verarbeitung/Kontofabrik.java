@@ -3,38 +3,22 @@ package bankprojekt.verarbeitung;
 /**
  * Abstrakte Fabrik für die Erzeugung von Konto-Objekten.
  * Definiert die Schnittstelle für das Erstellen verschiedener Kontotypen.
+ * Die konkreten Implementierungen dieser Fabrik sind für die Logik der Kontoerzeugung
+ * basierend auf dem Typ-String verantwortlich.
  */
 public abstract class Kontofabrik {
 
-
-    //public abstract  Konto erstellen(Kunde inhaber,long kontonummer);
-
-    // oder hier sollte die Switch Case eingebracht werden -- >
-    // auch mittels Object ...args für 0 oder mehre Paraemter damit auch Geldbetrag pbegeben werden könnte für Girokonto
-
-
     /**
-     * Erstellt ein Sparbuch-Objekt.
+     * Erstellt ein Konto-Objekt eines bestimmten Typs.
+     * Die Implementierung dieser Methode in den konkreten Fabriken
+     * ist für die Zuordnung des kontoTyp-Strings zum tatsächlichen Kontotyp und dessen Erzeugung verantwortlich.
+     *
+     * @param kontoTyp Der Typ des zu erstellenden Kontos (z.B. "sparbuch", "girokonto", "aktienkonto").
      * @param inhaber Der Kontoinhaber.
      * @param kontonummer Die Kontonummer.
-     * @return Ein neues Sparbuch-Objekt.
+     * @param betrag Ein optionaler Betrag, z.B. für den Dispokredit beim Girokonto.
+     * @return Ein neues Konto-Objekt des angeforderten Typs.
+     * @throws IllegalArgumentException Wenn der angeforderte Kontotyp unbekannt ist oder Parameter fehlen/ungültig sind.
      */
-    public abstract Sparbuch erstelleSparbuch(Kunde inhaber, long kontonummer);
-
-    /**
-     * Erstellt ein Girokonto-Objekt.
-     * @param inhaber Der Kontoinhaber.
-     * @param kontonummer Die Kontonummer.
-     * @param dispo Der Dispositionskredit.
-     * @return Ein neues Girokonto-Objekt.
-     */
-    public abstract Girokonto erstelleGirokonto(Kunde inhaber, long kontonummer, Geldbetrag dispo);
-
-    /**
-     * Erstellt ein Aktienkonto-Objekt.
-     * @param inhaber Der Kontoinhaber.
-     * @param kontonummer Die Kontonummer.
-     * @return Ein neues Aktienkonto-Objekt.
-     */
-    public abstract Aktienkonto erstelleAktienkonto(Kunde inhaber, long kontonummer);
+    public abstract Konto erstelleKonto(String kontoTyp, Kunde inhaber, long kontonummer, Geldbetrag betrag);
 }

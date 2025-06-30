@@ -6,7 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class Tests_Bank {
 
@@ -33,60 +37,106 @@ public class Tests_Bank {
     void testGirokontoErstellenMitFabrik(){
         long kontoNr = bank.kontoErstellen(standardFabrik,"Girokonto",testKunde1,new Geldbetrag(500,Waehrung.EUR));
         assertNotNull(bank.getAlleKontonummern().contains(kontoNr));
-        assertTrue(bank.getKonto(kontoNr) instanceof Girokonto);
+        assertInstanceOf(Girokonto.class, bank.getKonto(kontoNr));
     }
     @Test
-    void testSparbuchErstellenMitFabrik() {
+    void testSparbuchErstellenMitFabrik() throws GesperrtException {
         long kontoNr = bank.kontoErstellen(standardFabrik, "Sparbuch", testKunde2,new Geldbetrag(500));
         assertNotNull(bank.getKonto(kontoNr));
-        assertTrue(bank.getKonto(kontoNr) instanceof Sparbuch);
+        assertInstanceOf(Sparbuch.class, bank.getKonto(kontoNr));
         assertEquals(Geldbetrag.NULL_EURO, bank.getKonto(kontoNr).getKontostand());
+
+        Geldbetrag einzahlungsBetrag = new Geldbetrag(1000, Waehrung.EUR);
+        bank.geldEinzahlen(kontoNr, einzahlungsBetrag);
+        assertEquals(einzahlungsBetrag, bank.getKonto(kontoNr).getKontostand(), "Kontostand sollte nach Einzahlung korrekt sein.");
+
+        Geldbetrag abzuhebenderBetrag = new Geldbetrag(900);
+        boolean erfolgreichAbgehoeben = bank.geldAbheben(kontoNr,abzuhebenderBetrag);
+        assertTrue(erfolgreichAbgehoeben, "Abhebung sollte erfolgreich sein");
+
     }
 
     @Test
     void testAktienkontoErstellenMitFabrik() {
         long kontoNr = bank.kontoErstellen(standardFabrik, "Aktienkonto", testKunde1,new Geldbetrag(5));
         assertNotNull(bank.getKonto(kontoNr));
-        assertTrue(bank.getKonto(kontoNr) instanceof Aktienkonto);
+        assertInstanceOf(Aktienkonto.class, bank.getKonto(kontoNr));
         assertEquals(Geldbetrag.NULL_EURO, bank.getKonto(kontoNr).getKontostand());
     }
 
-    @Test
-    void testMockKontenErstellen() {
-        // Erstellen eines Mock-Sparbuchs mit der Mock-Fabrik
-        long sparbuchMockNr = bank.kontoErstellen(mockFabrik, "Sparbuch", testKunde1, new Geldbetrag(5));
-        assertNotNull(bank.getKonto(sparbuchMockNr));
-        assertTrue(bank.getKonto(sparbuchMockNr) instanceof Sparbuch);
-        // Prüfe den Startguthaben, das von der MockFabrik gesetzt wurde
-        assertEquals(new Geldbetrag(1000.00, Waehrung.EUR), bank.getKonto(sparbuchMockNr).getKontostand());
 
+    //__________________________________Mocking Tests__________________________________
+
+    @Test
+    void testMockGirokontoErstellenUndEinzahlen() {
         // Erstellen eines Mock-Girokontos mit der Mock-Fabrik
-        long giroMockNr = bank.kontoErstellen(mockFabrik, "Girokonto", testKunde2, new Geldbetrag(500.00, Waehrung.EUR));
-        assertNotNull(bank.getKonto(giroMockNr));
-        assertTrue(bank.getKonto(giroMockNr) instanceof Girokonto);
-        assertEquals(new Geldbetrag(500.00, Waehrung.EUR), bank.getKonto(giroMockNr).getKontostand());
+       long mockKontoNummer = bank.kontoErstellen(mockFabrik,"girokonto",testKunde1,new Geldbetrag(0));
+
+       // Set UP
+        // Das von der Bank zurückgegebene Konto ist das MOCK-Girokonto, das von mockFabrik erstellt wurde.
+        Girokonto gKonto = (Girokonto) bank.getKonto(mockKontoNummer);
+
+        assertNotNull(gKonto, "Das Girokonto sollte nicht null sein.");
+        assertInstanceOf(Girokonto.class, gKonto, "Das Objekt sollte eine Instanz von Girokonto sein.");
+
+        // 3. Einzahlungsbetrag definieren
+        Geldbetrag einzahlungsBetrag = new Geldbetrag(1000, Waehrung.EUR);
+
+        // 4. Die Einzahlung über die Bank-Methode auslösen
+        bank.geldEinzahlen(mockKontoNummer, einzahlungsBetrag);
+
+        // 5. Verifizieren, dass die Methode 'einzahlen' auf dem MOCK-Girokonto aufgerufen wurde
+        // mit dem erwarteten Betrag.
+        // Hier testen wir, ob die Bank die Einzahlung korrekt an das Konto weiterleitet.
+       verify(gKonto).einzahlen(einzahlungsBetrag);
     }
 
+    @Test
+    void testMockÜberweisungGirokontoNormal() throws GesperrtException {
+
+
+        // Set UP
+
+        //Mockkonten erstellen
+        long mockKontoNummer1 = bank.kontoErstellen(mockFabrik,"girokonto",testKunde1,new Geldbetrag(500));
+        long mockKontoNummer2 = bank.kontoErstellen(mockFabrik,"girokonto",testKunde2,new Geldbetrag(500));
+
+        // Das von der Bank zurückgegebene Konto ist das MOCK-Girokonto, das von mockFabrik erstellt wurde.
+        Girokonto gKonto1 = (Girokonto) bank.getKonto(mockKontoNummer1);
+        Girokonto gKonto2 = (Girokonto) bank.getKonto(mockKontoNummer2);
+
+        // festlegen, dass beim übersenden der Methode alle passenden Werte akzeptiert werden und true zurückgegeben wird
+        when(gKonto1.ueberweisungAbsenden(any(Geldbetrag.class),
+                anyString(),
+                anyLong(),
+                anyLong(),
+                anyString())).thenReturn(true);
+
+        // Exercise
+
+        Geldbetrag uebBetrag = new Geldbetrag(50, Waehrung.EUR);
+        bank.geldUeberweisen(mockKontoNummer1,mockKontoNummer2,uebBetrag,"Schulden");
+
+        // Verify - Kontrolle des Absenderkontos
+        verify(gKonto1).ueberweisungAbsenden(
+                eq(uebBetrag),
+                eq(testKunde2.getNachname() + ", " + testKunde2.getVorname()), // Der Name des Empfängers
+                eq(mockKontoNummer2),
+                eq(bank.getBankleitzahl()),
+                eq("Schulden")
+        );
+
+        // Verify - Kontrolle des Empfängerkontos
+        verify(gKonto2).ueberweisungEmpfangen(
+                eq(uebBetrag),
+                eq(testKunde1.getNachname() + ", " + testKunde1.getVorname()), // Der Name des Absenders
+                eq(mockKontoNummer1),
+                eq(bank.getBankleitzahl()),
+                eq("Schulden")
+        );
+    }
 
     /*
-    @Test
-    public void bankErstellenUndGirokonto() {
-        // Bank erstellen
-        Bank b1 = new Bank(1234567);
-        System.out.println("Bankleitzahl: " + b1.getBankleitzahl());  // Bankleitzahl ausgeben
-
-        // Kunde erstellen
-        Kunde k1 = new Kunde("Daniel", "Kujawa", "Bärlin", LocalDate.of(2000, 7, 12));
-        System.out.println("\n" + k1);
-
-        // Girokonto erstellen
-        long kontonummer = b1.girokontoErstellen(k1);
-        System.out.println("Neue Kontonummer: " + kontonummer);  // Kontonummer des erstellten Girokontos ausgeben
-
-        // Anzahl der Konten in der Map ausgeben
-        System.out.println("Anzahl der Konten in der Bank: " + b1.getAlleKonten());
-
-    }
 
     /**
      * testen ob 2 Konten erstellt werden können zu einer Bank

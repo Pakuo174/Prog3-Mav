@@ -1,5 +1,7 @@
-package bankprojekt.verarbeitung;
-
+import bankprojekt.verarbeitung.Aktie;
+import bankprojekt.verarbeitung.Aktienkonto;
+import bankprojekt.verarbeitung.Geldbetrag;
+import bankprojekt.verarbeitung.Kunde;
 import bankprojekt.verwaltung.Bank;
 
 import java.time.LocalDate;

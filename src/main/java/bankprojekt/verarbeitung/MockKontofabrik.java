@@ -1,32 +1,50 @@
-package bankprojekt.verarbeitung;// package bankprojekt.verarbeitung;
+package bankprojekt.verarbeitung;
 
-import bankprojekt.geld.Waehrung; // Importieren, falls Geldbetrag eine Waehrung erwartet
-import bankprojekt.verarbeitung.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
- * Konkrete Fabrik zur Erstellung von Mock-Konto-Objekten für Testzwecke.
+ * Konkrete Fabrik zur Erstellung von Mock-Konto-Objekten für Tests.
  */
 public class MockKontofabrik extends Kontofabrik {
 
     @Override
-    public Sparbuch erstelleSparbuch(Kunde inhaber, long kontonummer) {
-        Sparbuch sparbuch = new Sparbuch(inhaber, kontonummer);
-        sparbuch.einzahlen(new Geldbetrag(1000.00, Waehrung.EUR)); // Beispiel: Startguthaben für Mock
-        // Weitere Mock-Spezifikationen hier
-        return sparbuch;
-    }
+    public Konto erstelleKonto(String kontoTyp, Kunde inhaber, long kontonummer, Geldbetrag betrag) {
 
-    @Override
-    public Girokonto erstelleGirokonto(Kunde inhaber, long kontonummer, Geldbetrag dispo) {
-        Girokonto giro = new Girokonto(inhaber, kontonummer, dispo);
-        giro.einzahlen(new Geldbetrag(500.00, Waehrung.EUR)); // Beispiel: Startguthaben für Mock
-        return giro;
-    }
 
-    @Override
-    public Aktienkonto erstelleAktienkonto(Kunde inhaber, long kontonummer) {
-        Aktienkonto aktienkonto = new Aktienkonto(inhaber, kontonummer);
-        aktienkonto.einzahlen(new Geldbetrag(20000.00, Waehrung.EUR)); // Beispiel: Startkapital für Mock
-        return aktienkonto;
+        switch (kontoTyp.toLowerCase()) {
+            case "sparbuch":
+                // Erstellt einen Mock von Sparbuch.class
+                Sparbuch mockSparbuch = mock(Sparbuch.class);
+
+                // Standardverhalten:
+                when(mockSparbuch.getInhaber()).thenReturn(inhaber);
+                when(mockSparbuch.getKontonummer()).thenReturn(kontonummer);
+                return mockSparbuch;
+
+            case "girokonto":
+                // Erstellt einen Mock von Girokonto.class
+                Girokonto mockGirokonto = mock(Girokonto.class);
+
+                // Standardverhalten:
+                when(mockGirokonto.getInhaber()).thenReturn(inhaber);
+                when(mockGirokonto.getKontonummer()).thenReturn(kontonummer);
+                when(mockGirokonto.getKontostand()).thenReturn(betrag);
+
+                return mockGirokonto;
+
+            case "aktienkonto":
+                // Erstellt einen Mock von Aktienkonto.class
+                Aktienkonto mockAktienkonto = mock(Aktienkonto.class);
+
+                // Standardverhalten:
+                when(mockAktienkonto.getInhaber()).thenReturn(inhaber);
+                when(mockAktienkonto.getKontonummer()).thenReturn(kontonummer);
+
+                return mockAktienkonto;
+
+            default:
+                throw new IllegalArgumentException("Unbekannter Kontotyp für MockKontofabrik: " + kontoTyp);
+        }
     }
 }

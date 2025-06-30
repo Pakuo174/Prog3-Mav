@@ -53,22 +53,11 @@ public class Bank implements Serializable{
             throw new IllegalArgumentException("Inhaber darf nicht null sein");
         }
         long neueNummer = ++letzteKontonummer;
-        Konto neuesKonto = null;
 
-        switch (kontoTyp.toLowerCase()){
-            case "sparbuch":
-                neuesKonto = fabrik.erstelleSparbuch(inhaber,neueNummer);
-                break;
-            case "girokonto":
-                neuesKonto = fabrik.erstelleGirokonto(inhaber,neueNummer,betrag);
-                break;
-            case "aktienkonto":
-                neuesKonto = fabrik.erstelleAktienkonto(inhaber,neueNummer);
-                break;
-            default:
-                throw new IllegalArgumentException("Unbekannter Kontotyp: " + kontoTyp);
-        }
-        
+        // Die Fabrik ist nun dafür verantwortlich, den richtigen Kontotyp zu erzeugen,
+        // basierend auf dem übergebenen String und den Parametern.
+        Konto neuesKonto = fabrik.erstelleKonto(kontoTyp, inhaber, neueNummer, betrag);
+
         konten.put(neueNummer, neuesKonto);
         return neueNummer;
     }

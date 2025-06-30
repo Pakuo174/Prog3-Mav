@@ -168,12 +168,12 @@ public abstract class Konto implements Comparable<Konto>, Serializable
     }
 
     /**
-     * Hook-Methode: Überprüft die kontospezifischen Regeln für eine Abhebung.
+     * Überprüft die kontospezifischen Regeln für eine Abhebung.
      * Muss von den konkreten Unterklassen implementiert werden.
      * @param betrag der abzuhebende Betrag
      * @return true, wenn die kontospezifischen Regeln die Abhebung erlauben, false sonst.
      */
-    public abstract boolean pruefeAbhebungSpezifisch(Geldbetrag betrag);
+    protected abstract boolean pruefeAbhebungSpezifisch(Geldbetrag betrag);
 
     /**
      * sperrt das Konto, Aktionen zum Schaden des Benutzers sind nicht mehr möglich.

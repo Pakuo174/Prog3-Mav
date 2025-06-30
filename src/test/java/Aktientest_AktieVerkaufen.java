@@ -1,6 +1,5 @@
-package bankprojekt.verarbeitung;
-
 import bankprojekt.geld.Waehrung;
+import bankprojekt.verarbeitung.*;
 import bankprojekt.verwaltung.Bank;
 
 import java.time.LocalDate;

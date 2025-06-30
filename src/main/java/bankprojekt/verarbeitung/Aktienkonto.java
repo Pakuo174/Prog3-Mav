@@ -3,7 +3,9 @@ package bankprojekt.verarbeitung;
 import bankprojekt.geld.Waehrung;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -16,6 +18,9 @@ public class Aktienkonto extends Konto implements Serializable {
      * Der Schlüssel ist das Aktie-Objekt, der Wert ist die Stückzahl (Integer).
      */
     public Map <Aktie,Integer> aktiendepot;
+
+    // Beobachterliste - beim Ändern des Aktiendepots (wenn Aktien dazukommen oder entfernt werden)
+    private transient List<AktienkontoBeobachter> beobachterListe;
 
 
     //einen ExecutorService, um die Kaufaufträge asynchron auszuführen.
@@ -33,10 +38,46 @@ public class Aktienkonto extends Konto implements Serializable {
     public Aktienkonto(Kunde inhaber, long kontonummer) {
         super(inhaber, kontonummer);
         this.aktiendepot = new HashMap<>(); // Depot initialisieren
+        this.beobachterListe = new ArrayList<>();
     }
     public Aktienkonto(Kunde inhaber) {
         this.aktiendepot = new HashMap<>(); // Depot initialisieren
+        this.beobachterListe = new ArrayList<>();
     }
+    // --- METHODEN für das Observer-Muster ---
+
+    /**
+     * registriere einen Beobachter von diesem Aktienkonto
+     * @param beobachter der Observer eingesetzt wird
+     */
+    public void anmeldenBeobachter(AktienkontoBeobachter beobachter){
+        if (beobachter != null && !beobachterListe.contains(beobachter) ){
+            beobachterListe.add(beobachter);
+        }
+    }
+
+    /**
+     * entferne einen Beobachter von diesem Aktienkonto
+     * @param beobachter der nciht mehr als OBserver eingesetzt werden soll
+     */
+    public void entferneBeobachter(AktienkontoBeobachter beobachter){
+        beobachterListe.remove(beobachter);
+    }
+
+    /**
+     * Benachrichtigt alle registrierten Beobachter über eine Änderung im Depot
+     * @param aktie die betroffene Aktie
+     * @param anzahl Die Menge, die sich geändert hat
+     * @param neueStückzahl Der neue Gesamtbestand der Aktie im Depot
+     */
+    private void benachrichtigeBeobachter(Aktie aktie, int anzahl, int neueStückzahl){
+        for (AktienkontoBeobachter beobachter : beobachterListe){
+            beobachter.aktualisieren(this,aktie,anzahl,neueStückzahl);
+        }
+    }
+
+
+
 
     /**
      * Fügt eine Anzahl von Aktien zum Depot hinzu.
@@ -68,6 +109,9 @@ public class Aktienkonto extends Konto implements Serializable {
 
             // Aktien zum Depot hinzufügen (thread-safe durch äußeren synchronized-Block)
             aktiendepot.merge(aktie, anzahl, Integer::sum);
+
+            int neuerBestand = aktiendepot.get(aktie); // Den neuen Bestand holen
+            benachrichtigeBeobachter(aktie,anzahl,neuerBestand);
         }}
 
     /**
@@ -83,14 +127,27 @@ public class Aktienkonto extends Konto implements Serializable {
             return 0; // Aktie nicht im Depot
         }
         int aktuellerBestand = aktiendepot.get(aktie);
-        if (anzahl >= aktuellerBestand) {
+
+        if (anzahl <= 0) {
+                throw new IllegalArgumentException("Anzahl der zu entfernenden Aktien muss positiv sein.");
+            }
+        if (anzahl > aktuellerBestand) {
+                throw new IllegalArgumentException("Nicht genügend Aktien (" + aktie.getWkn() + ") im Depot. Bestand: " + aktuellerBestand + ", Angefordert: " + anzahl);
+            }
+
+
+        int neuerBestand;
+
+        if (anzahl == aktuellerBestand) {
             aktiendepot.remove(aktie); // Komplett entfernen
-            return aktuellerBestand;
+            neuerBestand = 0;
         } else {
             aktiendepot.put(aktie, aktuellerBestand - anzahl); // Bestand reduzieren
-            return anzahl;
+            neuerBestand = aktuellerBestand - anzahl;
         }
-    }}
+    }
+        return anzahl;
+    }
 
 
 
@@ -144,6 +201,10 @@ public class Aktienkonto extends Konto implements Serializable {
                         this.abheben(kaufbetragInKontowaehrung);
                         // Aktien zum Depot hinzufügen (Methode ist intern synchronisiert)
                         this.aktiendepot.merge(aktie, anzahl, Integer::sum); // Merge direkt verwenden
+                        // --- Beobachter benachrichtigen nach erfolgreichem Kauf ---
+                        int neuerBestand = aktiendepot.get(aktie);
+                        this.benachrichtigeBeobachter(aktie, anzahl, neuerBestand);
+
                         bezahlterPreis = gesamtpreisBerechnet; // Den Preis in der Aktienwährung oder Kontowährung zurückgeben
                     } else {
                         // Unzureichende Mittel, null zurückgeben, um Misserfolg anzuzeigen
@@ -272,9 +333,8 @@ public class Aktienkonto extends Konto implements Serializable {
 
 
 
-
+    @Override
     public boolean pruefeAbhebungSpezifisch(Geldbetrag betrag){
-
         return this.getKontostand().compareTo(betrag) >= 0;
     }
 

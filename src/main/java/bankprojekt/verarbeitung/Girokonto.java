@@ -112,7 +112,7 @@ public class Girokonto extends UeberweisungsfaehigesKonto implements Serializabl
     	return ausgabe;
     }
 
-
+	@Override
 	public boolean pruefeAbhebungSpezifisch(Geldbetrag betrag){
 
 		Geldbetrag dispoInKontowaehrung = this.dispo.umrechnen(this.getKontostand().getWaehrung());
