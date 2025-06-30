@@ -6,6 +6,13 @@ package bankprojekt.verarbeitung;
  */
 public abstract class Kontofabrik {
 
+
+    //public abstract  Konto erstellen(Kunde inhaber,long kontonummer);
+
+    // oder hier sollte die Switch Case eingebracht werden -- >
+    // auch mittels Object ...args für 0 oder mehre Paraemter damit auch Geldbetrag pbegeben werden könnte für Girokonto
+
+
     /**
      * Erstellt ein Sparbuch-Objekt.
      * @param inhaber Der Kontoinhaber.

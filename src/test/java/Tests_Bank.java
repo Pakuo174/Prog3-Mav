@@ -11,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class Tests_Bank {
 
 
+    // Mocking - die Fabrik und die Bank wird erstellt und dann wird gemockt
+
     private Bank bank;
     private Kunde testKunde1;
     private Kunde testKunde2;
