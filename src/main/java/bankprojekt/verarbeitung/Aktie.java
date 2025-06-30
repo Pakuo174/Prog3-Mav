@@ -37,24 +37,7 @@ public class Aktie implements Serializable {
 	// Dieser ist statisch und transient, d.h. er wird nicht serialisiert und ist global.
 	private static transient ScheduledExecutorService kursAenderungService;
 
-	// Statischer Initialisierungsblock: wird einmalig beim Laden der Klasse ausgeführt
-	static {
-		kursAenderungService = Executors.newScheduledThreadPool(1); // Ein Thread reicht hier oft
-		// Optional: Shutdown Hook, um den ExecutorService beim Beenden der JVM sauber herunterzufahren
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			if (kursAenderungService != null && !kursAenderungService.isShutdown()) {
-				kursAenderungService.shutdown();
-				try {
-					if (!kursAenderungService.awaitTermination(5, TimeUnit.SECONDS)) {
-						kursAenderungService.shutdownNow(); // Versuche, sofort zu beenden, wenn nicht terminiert
-					}
-				} catch (InterruptedException e) {
-					kursAenderungService.shutdownNow();
-					Thread.currentThread().interrupt();
-				}
-			}
-		}));
-	}
+
 
 
 	public static Aktie getAktie(String wkn) {
@@ -80,8 +63,6 @@ public class Aktie implements Serializable {
 		// Starten der Kursänderung
 
 	}
-
-
 
 
 	private void kursAendern() {
@@ -129,6 +110,37 @@ public class Aktie implements Serializable {
 		if (kursAenderung != null) {
 			kursAenderung.cancel(false);
 		}
+	}
+
+
+	public static void clearAlleAktien() {
+		// Stellen Sie sicher, dass keine laufenden Scheduled Tasks das stören
+		// oder dass der ExecutorService vor dem Leeren gestoppt wird,
+		// falls Tasks noch auf die 'alleAktien' zugreifen.
+		// Hier ist es wichtiger, die Map zu leeren.
+		alleAktien.clear();
+	}
+
+
+	public static void shutdownKursAenderungService() {
+		if (kursAenderungService != null && !kursAenderungService.isShutdown()) {
+			kursAenderungService.shutdown();
+			try {
+				if (!kursAenderungService.awaitTermination(1, TimeUnit.SECONDS)) { // Kurze Wartezeit
+					kursAenderungService.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				kursAenderungService.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
+		// Re-initialisieren für den nächsten Testlauf, falls benötigt (optional, je nach Teststruktur)
+		// Wenn Sie sicher sind, dass es in den Tests immer nur einmal pro JVM-Lauf gebraucht wird,
+		// können Sie es lassen. Aber bei vielen Tests kann das Problem verursachen.
+		// Für Unit-Tests ist es oft besser, den Service zu mocken oder zu kontrollieren.
+		// Für Integrationstests lassen Sie ihn laufen.
+		// Wenn Sie eine saubere Trennung pro Test wollen:
+		// kursAenderungService = Executors.newScheduledThreadPool(1);
 	}
 
 

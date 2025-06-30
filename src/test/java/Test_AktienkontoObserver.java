@@ -1,5 +1,6 @@
 import bankprojekt.geld.Waehrung;
 import bankprojekt.verarbeitung.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,17 @@ public class Test_AktienkontoObserver {
         mockBeobachter = mock(AktienkontoBeobachter.class);
         // registriere den Mock-Beobachter bei dem Aktienkonto
         aktienkonto1.anmeldenBeobachter(mockBeobachter);
+    }
+
+    // In Test_AktienkontoObserver.java
+    @AfterEach
+    void tearDown() {
+        // Sicherstellen, dass die Executors heruntergefahren werden
+        Aktienkonto.shutdownExecutor();
+        Aktie.shutdownKursAenderungService(); // Diese sollte existieren, siehe Problem 2
+
+        // Statische Map in Aktie leeren, damit andere Tests nicht fehlschlagen
+        Aktie.clearAlleAktien(); //
     }
 
 

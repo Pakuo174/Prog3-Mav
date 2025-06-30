@@ -11,15 +11,15 @@
 
     <properties>
         <!--  <maven.compiler.source>21</maven.compiler.source>-->
-      <!--  <maven.compiler.target>21</maven.compiler.target>  -->
-     <maven.compiler.release>21</maven.compiler.release>
+        <!--  <maven.compiler.target>21</maven.compiler.target>  -->
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--suppress UnresolvedMavenProperty -->
         <javafx.module.path>${env.JAVAFX_SDK}/lib</javafx.module.path>
     </properties>
 
 
-<!-- zusätzliche Biblos            -->
+    <!-- zusätzliche Biblos            -->
     <dependencies>
         <dependency>
             <groupId>org.decimal4j</groupId>
