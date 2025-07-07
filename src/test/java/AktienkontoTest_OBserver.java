@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class Test_AktienkontoObserver {
+public class AktienkontoTest_OBserver {
 
     private Kunde testKunde1;
     private Kunde testKunde2;

@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class Tests_Bank {
+public class BankTest {
 
 
     // Mocking - die Fabrik und die Bank wird erstellt und dann wird gemockt

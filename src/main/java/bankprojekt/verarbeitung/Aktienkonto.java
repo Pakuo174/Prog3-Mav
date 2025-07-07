@@ -70,7 +70,7 @@ public class Aktienkonto extends Konto implements Serializable {
      * @param anzahl Die Menge, die sich geändert hat
      * @param neueStückzahl Der neue Gesamtbestand der Aktie im Depot
      */
-    private void benachrichtigeBeobachter(Aktie aktie, int anzahl, int neueStückzahl){
+    protected void benachrichtigeBeobachter(Aktie aktie, int anzahl, int neueStückzahl){
         for (AktienkontoBeobachter beobachter : beobachterListe){
             beobachter.aktualisieren(this,aktie,anzahl,neueStückzahl);
         }

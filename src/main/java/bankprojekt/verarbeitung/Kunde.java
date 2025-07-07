@@ -1,5 +1,8 @@
 package bankprojekt.verarbeitung;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +13,7 @@ import java.util.Locale;
 /**
  * Kunde einer Bank
  * @author Dorothea Hubrich
+ * @author Daniel Kujawa
  */
 public class Kunde implements Comparable<Kunde>, Serializable {
 
@@ -43,11 +47,14 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	/**
 	 * Die Adresse
 	 */
-	private String adresse;
+	//private String adresse;
 	/**
 	 * Geburtstag
 	 */
 	private LocalDate geburtstag;
+
+
+	private StringProperty adresse;
 
 	/**
 	 * erzeugt den Standardkunden Max Mustermann
@@ -70,7 +77,7 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 			throw new IllegalArgumentException("null als Parameter nich erlaubt");
 		this.vorname = vorname;
 		this.nachname = nachname;
-		this.adresse = adresse;
+		this.adresse = new SimpleStringProperty(adresse);
 		this.geburtstag = gebdat;
 		
 		/*Runtime umgebung = Runtime.getRuntime();
@@ -100,13 +107,16 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	 * 
 	 * @param vorname Vorname
 	 * @param nachname Nachname
-	 * @param adresse Adresse
+	 * @param adresseAlsString Adresse
 	 * @param gebdat Geburtstag im Format tt.mm.yy
 	 * @throws DateTimeParseException wenn das Format des übergebenen Datums nicht korrekt ist
 	 * @throws IllegalArgumentException wenn einer der Parameter null ist
 	 */
-	public Kunde(String vorname, String nachname, String adresse, String gebdat)  {
-		this(vorname, nachname, adresse, LocalDate.parse(gebdat,DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)));
+	public Kunde(String vorname, String nachname, String adresseAlsString, String gebdat)  { // Parameter ist String, nicht StringProperty
+		this(vorname,
+				nachname,
+				adresseAlsString, // Hier den String übergeben
+				LocalDate.parse(gebdat,DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)));
 	}
 
 	/**
@@ -122,6 +132,10 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 		return ausgabe;
 	}
 
+
+	public StringProperty adresseProperty(){
+		return this.adresse;
+	}
 	/**
 	 * vollständiger Name des Kunden in der Form "Nachname, Vorname"
 	 * 
@@ -137,7 +151,7 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	 * @return Adresse des Kunden
 	 */
 	public String getAdresse() {
-		return adresse;
+		return adresse.get();
 	}
 
 	/**
@@ -148,7 +162,7 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	public void setAdresse(String adresse) {
 		if(adresse == null)
 			throw new IllegalArgumentException("Adresse darf nicht null sein");
-		this.adresse = adresse;
+		this.adresse.set(adresse);
 	}
 
 	/**
