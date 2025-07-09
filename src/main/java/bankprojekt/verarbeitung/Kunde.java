@@ -54,7 +54,39 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	private LocalDate geburtstag;
 
 
+	//___________________________________________ JAVA FX _______________________________________________ ↓
+
 	private StringProperty adresse;
+
+	/**
+	 * Die Adresse des Kunden.
+	 * Diese Property ermöglicht das Binden und Überwachen von Änderungen der Kundenadresse
+	 * @return Die StringProperty, die die Adresse des Kunden repräsentiert.
+	 */
+	public StringProperty adresseProperty(){
+		return this.adresse;
+	}
+
+	/**
+	 * Adresse des Kunden
+	 * @return Adresse des Kunden
+	 */
+	public String getAdresse() {
+		return adresse.get();
+	}
+
+	/**
+	 * setzt die Adresse auf den angegebenen Wert
+	 * @param adresse neue Adresse
+	 * @throws IllegalArgumentException wenn adresse null ist
+	 */
+	public void setAdresse(String adresse) {
+		if(adresse == null)
+			throw new IllegalArgumentException("Adresse darf nicht null sein");
+		this.adresse.set(adresse);
+	}
+
+	//___________________________________________ JAVA FX _______________________________________________ ↑
 
 	/**
 	 * erzeugt den Standardkunden Max Mustermann
@@ -133,9 +165,7 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 	}
 
 
-	public StringProperty adresseProperty(){
-		return this.adresse;
-	}
+
 	/**
 	 * vollständiger Name des Kunden in der Form "Nachname, Vorname"
 	 * 
@@ -145,25 +175,6 @@ public class Kunde implements Comparable<Kunde>, Serializable {
 		return this.nachname + ", " + this.vorname;
 	}
 
-	/**
-	 * Adresse des Kunden
-	 * 
-	 * @return Adresse des Kunden
-	 */
-	public String getAdresse() {
-		return adresse.get();
-	}
-
-	/**
-	 * setzt die Adresse auf den angegebenen Wert
-	 * @param adresse neue Adresse
-	 * @throws IllegalArgumentException wenn adresse null ist
-	 */
-	public void setAdresse(String adresse) {
-		if(adresse == null)
-			throw new IllegalArgumentException("Adresse darf nicht null sein");
-		this.adresse.set(adresse);
-	}
 
 	/**
 	 * Nachname des Kunden

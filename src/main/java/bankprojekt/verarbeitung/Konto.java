@@ -29,31 +29,6 @@ public abstract class Konto implements Comparable<Konto>, Serializable
      */
     private final long nummer;
 
-    /**
-     * der aktuelle Kontostand
-     */
-   // private Geldbetrag kontostand;
-    private ReadOnlyObjectWrapper<Geldbetrag> kontostand;
-    /**
-     * setzt den aktuellen Kontostand
-     * @param kontostand neuer Kontostand, darf nicht null sein
-     */
-    protected void setKontostand(Geldbetrag kontostand) {
-        if(kontostand != null)
-            this.kontostand.set(kontostand);
-    }
-
-    /**
-     * Wenn das Konto gesperrt ist (gesperrt = true), können keine Aktionen daran mehr vorgenommen werden,
-     * die zum Schaden des Kontoinhabers wären (abheben, Inhaberwechsel)
-     */
-    //private boolean gesperrt;
-    private BooleanProperty gesperrt;
-
-    /**
-     * Property für negativen und postiven Zustand des Konto
-     */
-    private BooleanProperty imPlus;
 
     /**
      * Setzt die beiden Eigenschaften kontoinhaber und kontonummer auf die angegebenen Werte,
@@ -82,6 +57,14 @@ public abstract class Konto implements Comparable<Konto>, Serializable
     }
 
     /**
+     * liefert die Kontonummer zurück
+     * @return   Kontonummer
+     */
+    public long getKontonummer() {
+        return nummer;
+    }
+
+    /**
      * liefert den Kontoinhaber zurück
      * @return   der Inhaber
      */
@@ -105,14 +88,12 @@ public abstract class Konto implements Comparable<Konto>, Serializable
 
     }
 
-    private void updateImPlusProperty(Geldbetrag neuerKontostand) {
-        if (neuerKontostand != null) {
-            this.imPlus.set(!neuerKontostand.isNegativ());
-        }
-    }
-    public BooleanProperty imPlusProperty() {
-        return this.imPlus;
-    }
+    //___________________________________________ JAVA FX _______________________________________________ ↓
+
+    /**
+     * Attribut der aktuelle Kontostand
+     */
+    private ReadOnlyObjectWrapper<Geldbetrag> kontostand;
 
     /**
      * Getter für die Property hinzufügen
@@ -121,8 +102,14 @@ public abstract class Konto implements Comparable<Konto>, Serializable
     public ReadOnlyObjectProperty<Geldbetrag> kontostandProperty() {
         return this.kontostand.getReadOnlyProperty();
     }
-    public BooleanProperty gesperrtProperty() {
-        return this.gesperrt;
+
+    /**
+     * setzt den aktuellen Kontostand
+     * @param kontostand neuer Kontostand, darf nicht null sein
+     */
+    protected void setKontostand(Geldbetrag kontostand) {
+        if(kontostand != null)
+            this.kontostand.set(kontostand);
     }
 
     /**
@@ -133,12 +120,17 @@ public abstract class Konto implements Comparable<Konto>, Serializable
         return kontostand.get();
     }
 
+
+
     /**
-     * liefert die Kontonummer zurück
-     * @return   Kontonummer
+     * Wenn das Konto gesperrt ist (gesperrt = true), können keine Aktionen daran mehr vorgenommen werden,
+     * die zum Schaden des Kontoinhabers wären (abheben, Inhaberwechsel)
      */
-    public long getKontonummer() {
-        return nummer;
+    //private boolean gesperrt;
+    private BooleanProperty gesperrt;
+
+    public BooleanProperty gesperrtProperty() {
+        return this.gesperrt;
     }
 
     /**
@@ -148,6 +140,27 @@ public abstract class Konto implements Comparable<Konto>, Serializable
     public boolean isGesperrt() {
         return gesperrt.get();
     }
+
+
+    /**
+     * Property für negativen und postiven Zustand des Konto
+     */
+    private BooleanProperty imPlus;
+
+
+    private void updateImPlusProperty(Geldbetrag neuerKontostand) {
+        if (neuerKontostand != null) {
+            this.imPlus.set(!neuerKontostand.isNegativ());
+        }
+    }
+
+    public BooleanProperty imPlusProperty() {
+        return this.imPlus;
+    }
+
+
+
+    //___________________________________________ JAVA FX _______________________________________________ ↑
 
     /**
      * Erhöht den Kontostand um den eingezahlten Betrag.

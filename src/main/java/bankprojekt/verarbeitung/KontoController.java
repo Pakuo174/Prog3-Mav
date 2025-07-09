@@ -36,6 +36,7 @@ public class KontoController {
                 }, this.model.kontostandProperty())
         );
 
+
         // Listener für imPlus/imMinus Property, um Kontostand-Farbe zu ändern
         this.model.imPlusProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
@@ -51,15 +52,18 @@ public class KontoController {
             this.view.stand.setFill(Color.RED);
         }
 
-        // Andere Bindungen
+        /**
+         * _________________________________ Andere Bindungen _________________________________
+         */
+
+
         // Bidirektionales Binding für den 'gesperrt'-Status (hier bleibt es)
         this.view.gesperrt.selectedProperty().bindBidirectional(this.model.gesperrtProperty());
 
-        // NEU: Unidirektionale Bindung für die ANZEIGE der aktuellen Adresse
-        // Die Anzeige zeigt immer den aktuellen Wert aus dem Model an
+        // Unidirektionale Bindung für die ANZEIGE der aktuellen Adresse
         this.view.aktuelleAdresseAnzeige.textProperty().bind(this.model.getInhaber().adresseProperty());
 
-        // NEU: Initialisiere das Eingabefeld mit der aktuellen Adresse
+        // Initialisiere das Eingabefeld mit der aktuellen Adresse
         this.view.adresseEingabe.setText(this.model.getInhaber().getAdresse());
 
 
@@ -67,7 +71,7 @@ public class KontoController {
         this.view.einzahlen.setOnAction(actionEvent -> handleEinzahlen());
         this.view.abheben.setOnAction(actionEvent -> handleAbheben());
 
-        // NEU: Ereignisbehandlung für den Adresse-Speichern-Button
+        // Ereignisbehandlung für den Adresse-Speichern-Button
         this.view.adresseSpeichern.setOnAction(actionEvent -> handleAdresseSpeichern());
 
 
@@ -166,13 +170,9 @@ public class KontoController {
 
         try {
             // Adresse im Model aktualisieren
-            // Hier nutzen wir den Setter der Property in der Kunde-Klasse
             this.model.getInhaber().setAdresse(neueAdresse);
             view.meldung.setText("Adresse erfolgreich geändert.");
             view.meldung.setFill(Color.GREEN);
-            // Das Eingabefeld muss nicht geleert werden, da es oft sinnvoll ist,
-            // die eingegebene Adresse nach dem Speichern dort zu lassen.
-            // Oder man könnte es auch leeren: view.adresseEingabe.clear();
         } catch (Exception e) {
             view.meldung.setText("Fehler beim Speichern der Adresse: " + e.getMessage());
             view.meldung.setFill(Color.RED);
